@@ -1,0 +1,18 @@
+{
+	"IsEncrypted": false,
+	"Values": {
+		"FUNCTIONS_WORKER_RUNTIME": "node",
+		"WEB3_URL": "",
+		"APPROVAL": "30",
+		"DB_HOST": "localhost",
+		"DB_PORT": "5432",
+		"DB_USERNAME": "testuser",
+		"DB_PASSWORD": "testpassword",
+		"DB_DATABASE": "testdb",
+		"AzureWebJobsStorage": "UseDevelopmentStorage=true",
+		"DISCORD_WEBHOOK_URL_INFO": "",
+		"DISCORD_WEBHOOK_URL_WARNING": "",
+		"DISCORD_WEBHOOK_URL_ERROR": "",
+		"ENTITIES": "dist/entities/*.js"
+	}
+}

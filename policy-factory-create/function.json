@@ -1,0 +1,11 @@
+{
+	"scriptFile": "../dist/policy-factory-create/index.js",
+	"bindings": [
+		{
+			"name": "myTimer",
+			"type": "timerTrigger",
+			"direction": "in",
+			"schedule": "20 0 * * * *"
+		}
+	]
+}

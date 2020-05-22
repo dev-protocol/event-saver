@@ -1,0 +1,11 @@
+{
+	"scriptFile": "../dist/property-meta/index.js",
+	"bindings": [
+		{
+			"name": "myTimer",
+			"type": "timerTrigger",
+			"direction": "in",
+			"schedule": "55 0 * * * *"
+		}
+	]
+}

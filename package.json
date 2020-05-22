@@ -1,0 +1,81 @@
+{
+	"name": "event-saver",
+	"version": "1.0.0",
+	"description": "A tool that can refer to Dev Protocol event information",
+	"author": "Akira-Taniguchi",
+	"license": "MPL-2.0",
+	"scripts": {
+		"build": "tsc",
+		"build:production": "npm run prestart && npm prune --production",
+		"watch": "tsc --w",
+		"prestart": "npm run build && func extensions install",
+		"start:host": "func start",
+		"start": "npm-run-all --parallel start:host watch",
+		"test": "npm run build && jest --runInBand",
+		"lint": "npm run lint:eslint && npm run lint:format",
+		"lint:eslint": "eslint . --ext .ts --fix",
+		"lint:format": "prettier --write '**/*.{json,md,yml}'"
+	},
+	"jest": {
+		"moduleFileExtensions": [
+			"js",
+			"json",
+			"jsx",
+			"ts",
+			"tsx",
+			"node"
+		],
+		"transform": {
+			"^.+\\.(ts)$": "ts-jest"
+		},
+		"globals": {
+			"ts-jest": {
+				"config": "tsconfig.json"
+			}
+		},
+		"testMatch": [
+			"**/test/main/**/*.ts"
+		]
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "npm run lint"
+		}
+	},
+	"dependencies": {
+		"@types/pg": "7.14.3",
+		"bignumber.js": "9.0.0",
+		"discord-webhook-ts": "3.0.3",
+		"pg": "8.2.1",
+		"typeorm": "0.2.25",
+		"web3": "1.2.8"
+	},
+	"devDependencies": {
+		"@azure/functions": "1.2.0",
+		"@types/jest": "25.2.3",
+		"@typescript-eslint/eslint-plugin": "2.34.0",
+		"@typescript-eslint/parser": "2.34.0",
+		"azure-function-context-mock": "0.0.7",
+		"azurite": "3.7.0",
+		"eslint": "7.0.0",
+		"eslint-config-prettier": "6.11.0",
+		"eslint-config-xo": "0.29.1",
+		"eslint-config-xo-typescript": "0.29.0",
+		"eslint-plugin-jest": "23.13.1",
+		"eslint-plugin-prettier": "3.1.3",
+		"husky": "4.2.5",
+		"jest": "26.0.1",
+		"npm-run-all": "4.1.5",
+		"prettier": "2.0.5",
+		"ts-jest": "26.0.0",
+		"typescript": "3.9.3"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/dev-protocol/event-saver.git"
+	},
+	"bugs": {
+		"url": "https://github.com/dev-protocol/event-saver/issues"
+	},
+	"homepage": "https://github.com/dev-protocol/event-saver/blob/master/README.JA.md"
+}

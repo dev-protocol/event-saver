@@ -1,0 +1,11 @@
+{
+	"scriptFile": "../dist/allocator-allocation-result/index.js",
+	"bindings": [
+		{
+			"name": "myTimer",
+			"type": "timerTrigger",
+			"direction": "in",
+			"schedule": "30 0 * * * *"
+		}
+	]
+}

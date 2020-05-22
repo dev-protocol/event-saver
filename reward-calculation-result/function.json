@@ -1,0 +1,11 @@
+{
+	"scriptFile": "../dist/reward-calculation-result/index.js",
+	"bindings": [
+		{
+			"name": "myTimer",
+			"type": "timerTrigger",
+			"direction": "in",
+			"schedule": "50 0 * * * *"
+		}
+	]
+}

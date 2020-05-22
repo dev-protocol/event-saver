@@ -1,0 +1,22 @@
+{
+	"env": { "jest": true },
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"project": "./tsconfig.json",
+		"tsconfigRootDir": "."
+	},
+	"plugins": ["@typescript-eslint", "prettier", "jest"],
+	"extends": [
+		"xo",
+		"xo-typescript",
+		"plugin:prettier/recommended",
+		"prettier/@typescript-eslint"
+	],
+	"rules": {
+		"prettier/prettier": "error",
+		"@typescript-eslint/prefer-readonly-parameter-types": "off",
+		"@typescript-eslint/no-unsafe-member-access": "off",
+		"@typescript-eslint/no-unsafe-call": "off",
+		"@typescript-eslint/no-unsafe-return": "off"
+	}
+}
