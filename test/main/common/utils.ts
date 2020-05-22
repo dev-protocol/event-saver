@@ -1,6 +1,4 @@
-import {
-	getTargetRecordsSeparatedByBlockNumber,
-} from '../../../common/utils'
+import { getTargetRecordsSeparatedByBlockNumber } from '../../../common/utils'
 
 describe('getTargetRecordsSeparatedByBlockNumber', () => {
 	describe('the block numbers are different.', () => {
