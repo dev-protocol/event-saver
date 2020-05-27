@@ -1,6 +1,6 @@
 name: Node
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -12,10 +12,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: cache deps
+        uses: actions/cache@master
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-${ GITHUB_SHA }
+
       - name: npm install and test
         run: |
           npm ci
@@ -23,3 +32,33 @@ jobs:
           docker-compose up -d
           cd ../..
           npm test
+
+  deploy:
+    needs: build
+    if: ${{ github.event_name != 'pull_request' && contains(github.ref, 'master') }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: restore cache deps
+        uses: actions/cache@master
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-${ GITHUB_SHA }
+
+      - name: Build
+        run: npm run build
+
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: dev-protocol-event-saver
