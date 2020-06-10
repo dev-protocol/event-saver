@@ -15,7 +15,7 @@ describe('Event', () => {
 
 					public async getPastEvents(
 						_: string,
-						__: object
+						__: Record<string, unknown>
 					): Promise<Array<Map<string, any>>> {
 						const tmpMap1 = new Map<string, any>()
 						tmpMap1.set('id', 'log-test1')

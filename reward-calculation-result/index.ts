@@ -14,7 +14,7 @@ const Web3 = require('web3')
 
 class RewardCalculationer extends TimerBatchBase {
 	getBatchName(): string {
-		return 'property-authentication'
+		return 'reward-calculation-result'
 	}
 
 	async innerExecute(): Promise<void> {
