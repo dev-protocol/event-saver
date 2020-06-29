@@ -11,7 +11,7 @@
 		"prestart": "npm run build && func extensions install",
 		"start:host": "func start",
 		"start": "npm-run-all --parallel start:host watch",
-		"test": "npm run build && jest --runInBand",
+		"test": "npm run build && jest --runInBand --testTimeout=30000",
 		"lint": "npm run lint:eslint && npm run lint:format",
 		"lint:eslint": "eslint . --ext .ts --fix",
 		"lint:format": "prettier --write '**/*.{json,md,yml}'"
