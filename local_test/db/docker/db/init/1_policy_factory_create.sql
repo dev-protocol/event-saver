@@ -7,7 +7,6 @@ CREATE TABLE policy_factory_create(
     transaction_index INT NOT NULL,
     from_address TEXT NOT NULL,
     policy_address TEXT NOT NULL,
-    inner_policy TEXT NOT NULL,
     raw_data TEXT NOT NULL,
     PRIMARY KEY(event_id)
 );
@@ -23,5 +22,4 @@ COMMENT ON COLUMN policy_factory_create.log_index IS 'event log index';
 COMMENT ON COLUMN policy_factory_create.transaction_index IS 'event transaction index';
 COMMENT ON COLUMN policy_factory_create.from_address IS 'author address of the policy';
 COMMENT ON COLUMN policy_factory_create.policy_address IS 'policy address';
-COMMENT ON COLUMN policy_factory_create.inner_policy IS 'detailed policy address';
 COMMENT ON COLUMN policy_factory_create.raw_data IS 'event raw data';

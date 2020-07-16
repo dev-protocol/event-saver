@@ -22,8 +22,5 @@ export class PolicyFactoryCreate extends BaseEntity {
 	public policy_address!: string
 
 	@Column()
-	public inner_policy!: string
-
-	@Column()
 	public raw_data!: string
 }
