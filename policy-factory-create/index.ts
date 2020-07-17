@@ -13,7 +13,6 @@ class CreateEventSaver extends EventSaver {
 		const values = event.get('returnValues')
 		policyFactoryCreate.from_address = values._from
 		policyFactoryCreate.policy_address = values._policy
-		policyFactoryCreate.inner_policy = values._innerPolicy
 		return policyFactoryCreate
 	}
 

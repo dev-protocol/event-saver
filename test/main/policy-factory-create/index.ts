@@ -48,7 +48,6 @@ describe('timerTrigger', () => {
 						returnValues: {
 							_from: 'dummy-user-address1',
 							_policy: 'dummy-policy-address1',
-							_innerPolicy: 'dummy-inner-policy-address1',
 						},
 					},
 					{
@@ -59,7 +58,6 @@ describe('timerTrigger', () => {
 						returnValues: {
 							_from: 'dummy-user-address2',
 							_policy: 'dummy-policy-address2',
-							_innerPolicy: 'dummy-inner-policy-address2',
 						},
 					},
 					{
@@ -70,7 +68,6 @@ describe('timerTrigger', () => {
 						returnValues: {
 							_from: 'dummy-user-address3',
 							_policy: 'dummy-policy-address3',
-							_innerPolicy: 'dummy-inner-policy-address3',
 						},
 					},
 				]),
@@ -90,42 +87,30 @@ describe('timerTrigger', () => {
 		expect(record.event_id).toBe('dummy-event-id1')
 		expect(record.from_address).toBe('dummy-user-address1')
 		expect(record.policy_address).toBe('dummy-policy-address1')
-		expect(record.inner_policy).toBe('dummy-inner-policy-address1')
 		let rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id1')
 		expect(rawData.returnValues._from).toBe('dummy-user-address1')
 		expect(rawData.returnValues._policy).toBe('dummy-policy-address1')
-		expect(rawData.returnValues._innerPolicy).toBe(
-			'dummy-inner-policy-address1'
-		)
 
 		record = await manager.findOneOrFail(PolicyFactoryCreate, 'dummy-event-id2')
 
 		expect(record.event_id).toBe('dummy-event-id2')
 		expect(record.from_address).toBe('dummy-user-address2')
 		expect(record.policy_address).toBe('dummy-policy-address2')
-		expect(record.inner_policy).toBe('dummy-inner-policy-address2')
 		rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id2')
 		expect(rawData.returnValues._from).toBe('dummy-user-address2')
 		expect(rawData.returnValues._policy).toBe('dummy-policy-address2')
-		expect(rawData.returnValues._innerPolicy).toBe(
-			'dummy-inner-policy-address2'
-		)
 
 		record = await manager.findOneOrFail(PolicyFactoryCreate, 'dummy-event-id3')
 
 		expect(record.event_id).toBe('dummy-event-id3')
 		expect(record.from_address).toBe('dummy-user-address3')
 		expect(record.policy_address).toBe('dummy-policy-address3')
-		expect(record.inner_policy).toBe('dummy-inner-policy-address3')
 		rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id3')
 		expect(rawData.returnValues._from).toBe('dummy-user-address3')
 		expect(rawData.returnValues._policy).toBe('dummy-policy-address3')
-		expect(rawData.returnValues._innerPolicy).toBe(
-			'dummy-inner-policy-address3'
-		)
 	})
 	afterAll(async () => {
 		await con.quit()
