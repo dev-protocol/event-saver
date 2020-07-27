@@ -105,7 +105,7 @@ class CurrentLockupCreator extends TimerBatchBase {
 			this.logging.infolog(`record count：${targetRecords.length}`)
 			let count = 0
 			for (let record of targetRecords) {
-				// withdrawの時、削除
+				// Withdrawの時、削除
 
 				const lockedup = await this.getLockupedRecord(con, record)
 				const lockedupEventId = lockedup.event_id
