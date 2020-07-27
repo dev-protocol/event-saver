@@ -102,12 +102,14 @@ class PropertyAddress {
 	}
 
 	public isExistencePropertyAddress(address: string): boolean {
-		return this._propertySet.has(address)
+		const checkedAddress = Web3.utils.toChecksumAddress(address)
+		return this._propertySet.has(checkedAddress)
 	}
 
 	public async isPropertyAddress(address: string): Promise<boolean> {
-		if (this._propertyGroupInstance.methods.isGroup(address)) {
-			this._propertySet.add(address)
+		const checkedAddress = Web3.utils.toChecksumAddress(address)
+		if (await this._propertyGroupInstance.methods.isGroup(checkedAddress)) {
+			this._propertySet.add(checkedAddress)
 			return true
 		}
 

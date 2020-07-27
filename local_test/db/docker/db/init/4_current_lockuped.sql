@@ -4,7 +4,8 @@ CREATE TABLE current_lockuped(
     property_address TEXT NOT NULL,
     wallet_address TEXT NOT NULL,
     value NUMERIC NOT NULL,
-	locked_up_event_id TEXT NOT NULL
+	locked_up_event_id TEXT NOT NULL,
+	block_number INT NOT NULL,
 );
 
 CREATE INDEX ON current_lockuped(
