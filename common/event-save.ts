@@ -12,7 +12,7 @@ import { ContractInfo } from '../entities/contract-info'
 const Web3 = require('web3')
 
 export abstract class EventSaver extends TimerBatchBase {
-	private readonly _db: DbConnection
+	protected readonly _db: DbConnection
 
 	constructor(context: Context, myTimer: any) {
 		super(context, myTimer)
@@ -22,6 +22,7 @@ export abstract class EventSaver extends TimerBatchBase {
 	async innerExecute(): Promise<void> {
 		try {
 			await this._db.connect()
+			await this.setup()
 			const events = await this._getEvents()
 			if (events.length !== 0) {
 				await this._saveEvents(events)
@@ -35,6 +36,14 @@ export abstract class EventSaver extends TimerBatchBase {
 		}
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	async setup(): Promise<void> {}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async isTargetEvent(event: Map<string, any>): Promise<boolean> {
+		return true
+	}
+
 	private async _saveEvents(events: Array<Map<string, any>>): Promise<void> {
 		const eventTable = new EventTableAccessor(
 			this._db.connection,
@@ -45,6 +54,12 @@ export abstract class EventSaver extends TimerBatchBase {
 			await transaction.start()
 			for (let event of events) {
 				const eventMap = new Map(Object.entries(event))
+				// eslint-disable-next-line no-await-in-loop
+				const isTarget = await this.isTargetEvent(eventMap)
+				if (!isTarget) {
+					continue
+				}
+
 				// eslint-disable-next-line no-await-in-loop
 				const hasData = await eventTable.hasData(eventMap.get('id'))
 				if (hasData) {
