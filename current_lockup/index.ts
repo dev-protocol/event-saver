@@ -11,7 +11,7 @@ import { CurrentLockup } from '../entities/current-lockup'
 
 class CurrentLockupCreator extends TimerBatchBase {
 	getBatchName(): string {
-		return 'property-meta'
+		return 'current-lockup'
 	}
 
 	async innerExecute(): Promise<void> {
@@ -57,11 +57,11 @@ class CurrentLockupCreator extends TimerBatchBase {
 		throw new Error('get many lockup_lockuped record.')
 	}
 
-	private async getOldValue(
+	private async getOldRecord(
 		con: Connection,
 		walletAddress: string,
 		propertyAddress: string
-	): Promise<number> {
+	): Promise<CurrentLockup> {
 		const repository = con.getRepository(CurrentLockup)
 
 		const findRecords = await repository.findOne({
@@ -69,10 +69,10 @@ class CurrentLockupCreator extends TimerBatchBase {
 			property_address: propertyAddress,
 		})
 		if (typeof findRecords === 'undefined') {
-			return 0
+			return undefined
 		}
 
-		return findRecords.value
+		return findRecords
 	}
 
 	private async getAddressFromDevPropertyTransfer(
@@ -105,26 +105,39 @@ class CurrentLockupCreator extends TimerBatchBase {
 			this.logging.infolog(`record count：${targetRecords.length}`)
 			let count = 0
 			for (let record of targetRecords) {
-				// Withdrawの時、削除
-
-				const lockedup = await this.getLockupedRecord(con, record)
-				const lockedupEventId = lockedup.event_id
 				const [
 					walletAddress,
 					propertyAddress,
 				] = await this.getAddressFromDevPropertyTransfer(record)
-				const value = await this.getOldValue(
+				const oldCurrentLockup = await this.getOldRecord(
 					con,
 					walletAddress,
 					propertyAddress
 				)
-				const insertRecord = new CurrentLockup()
-				insertRecord.wallet_address = walletAddress
-				insertRecord.property_address = propertyAddress
-				insertRecord.value = record.value + value
-				insertRecord.block_number = record.block_number
-				insertRecord.locked_up_event_id = lockedupEventId
-				await transaction.save(insertRecord)
+				if (record.is_from_address_property) {
+					if (typeof oldCurrentLockup === 'undefined') {
+						continue
+					}
+
+					if (oldCurrentLockup.value !== record.value) {
+						throw new Error('the values of lockup and withdraw are different.')
+					}
+
+					await transaction.remove(oldCurrentLockup)
+				} else {
+					const lockedup = await this.getLockupedRecord(con, record)
+					const lockedupEventId = lockedup.event_id
+					const oldValue =
+						typeof oldCurrentLockup === 'undefined' ? 0 : oldCurrentLockup.value
+					const insertRecord = new CurrentLockup()
+					insertRecord.wallet_address = walletAddress
+					insertRecord.property_address = propertyAddress
+					insertRecord.value = record.value + oldValue
+					insertRecord.block_number = record.block_number
+					insertRecord.locked_up_event_id = lockedupEventId
+					await transaction.save(insertRecord)
+				}
+
 				count++
 				if (count % 10 === 0) {
 					this.logging.infolog(`records were inserted：${count}`)
