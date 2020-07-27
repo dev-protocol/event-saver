@@ -7,11 +7,11 @@ import { DbConnection, Transaction } from '../common/db/common'
 import { getMaxBlockNumber, getEventRecord } from '../common/db/event'
 import { LockupLockedup } from '../entities/lockup-lockedup'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
-import { CurrentLockup } from '../entities/current-lockup'
+import { AccounLockup } from '../entities/account_lockup'
 
-class CurrentLockupCreator extends TimerBatchBase {
+class AccountLockupCreator extends TimerBatchBase {
 	getBatchName(): string {
-		return 'current-lockup'
+		return 'account-lockup'
 	}
 
 	async innerExecute(): Promise<void> {
@@ -59,13 +59,13 @@ class CurrentLockupCreator extends TimerBatchBase {
 
 	private async getOldRecord(
 		con: Connection,
-		walletAddress: string,
+		accountAddress: string,
 		propertyAddress: string
-	): Promise<CurrentLockup> {
-		const repository = con.getRepository(CurrentLockup)
+	): Promise<AccounLockup> {
+		const repository = con.getRepository(AccounLockup)
 
 		const findRecords = await repository.findOne({
-			wallet_address: walletAddress,
+			account_address: accountAddress,
 			property_address: propertyAddress,
 		})
 		if (typeof findRecords === 'undefined') {
@@ -86,7 +86,7 @@ class CurrentLockupCreator extends TimerBatchBase {
 	}
 
 	private async createCurrentLockupRecord(con: Connection): Promise<void> {
-		const blockNumber = await getMaxBlockNumber(con, CurrentLockup)
+		const blockNumber = await getMaxBlockNumber(con, AccounLockup)
 		const records = await getEventRecord(
 			con,
 			DevPropertyTransfer,
@@ -106,12 +106,12 @@ class CurrentLockupCreator extends TimerBatchBase {
 			let count = 0
 			for (let record of targetRecords) {
 				const [
-					walletAddress,
+					accountAddress,
 					propertyAddress,
 				] = await this.getAddressFromDevPropertyTransfer(record)
 				const oldCurrentLockup = await this.getOldRecord(
 					con,
-					walletAddress,
+					accountAddress,
 					propertyAddress
 				)
 				if (record.is_from_address_property) {
@@ -129,8 +129,8 @@ class CurrentLockupCreator extends TimerBatchBase {
 					const lockedupEventId = lockedup.event_id
 					const oldValue =
 						typeof oldCurrentLockup === 'undefined' ? 0 : oldCurrentLockup.value
-					const insertRecord = new CurrentLockup()
-					insertRecord.wallet_address = walletAddress
+					const insertRecord = new AccounLockup()
+					insertRecord.account_address = accountAddress
 					insertRecord.property_address = propertyAddress
 					insertRecord.value = record.value + oldValue
 					insertRecord.block_number = record.block_number
@@ -159,7 +159,7 @@ const timerTrigger: AzureFunction = async function (
 	context: Context,
 	myTimer: any
 ): Promise<void> {
-	const dataCreator = new CurrentLockupCreator(context, myTimer)
+	const dataCreator = new AccountLockupCreator(context, myTimer)
 	await dataCreator.execute()
 }
 

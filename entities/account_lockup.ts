@@ -2,12 +2,12 @@
 import { Entity, Column, PrimaryColumn, BaseEntity } from 'typeorm'
 
 @Entity()
-export class CurrentLockuped extends BaseEntity {
+export class AccounLockup extends BaseEntity {
 	@PrimaryColumn()
-	public property_address!: string
+	public account_address!: string
 
 	@PrimaryColumn()
-	public wallet_address!: string
+	public property_address!: string
 
 	@Column()
 	public value!: number
