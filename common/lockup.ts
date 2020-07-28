@@ -1,19 +1,13 @@
 /* eslint-disable no-await-in-loop */
-import { AzureFunction, Context } from '@azure/functions'
-import { Connection } from 'typeorm'
+import { Connection, ObjectType } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
 import { getMaxBlockNumber, getEventRecord } from '../common/db/event'
 import { LockupLockedup } from '../entities/lockup-lockedup'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
-import { AccounLockup } from '../entities/account_lockup'
 
-class AccountLockupCreator extends TimerBatchBase {
-	getBatchName(): string {
-		return 'account-lockup'
-	}
-
+export abstract class LockupInfoCreator extends TimerBatchBase {
 	async innerExecute(): Promise<void> {
 		const db = new DbConnection(this.getBatchName())
 		await db.connect()
@@ -57,24 +51,6 @@ class AccountLockupCreator extends TimerBatchBase {
 		throw new Error('get many lockup_lockuped record.')
 	}
 
-	private async getOldRecord(
-		con: Connection,
-		accountAddress: string,
-		propertyAddress: string
-	): Promise<AccounLockup> {
-		const repository = con.getRepository(AccounLockup)
-
-		const findRecords = await repository.findOne({
-			account_address: accountAddress,
-			property_address: propertyAddress,
-		})
-		if (typeof findRecords === 'undefined') {
-			return undefined
-		}
-
-		return findRecords
-	}
-
 	private async getAddressFromDevPropertyTransfer(
 		record: DevPropertyTransfer
 	): Promise<string[]> {
@@ -86,7 +62,7 @@ class AccountLockupCreator extends TimerBatchBase {
 	}
 
 	private async createCurrentLockupRecord(con: Connection): Promise<void> {
-		const blockNumber = await getMaxBlockNumber(con, AccounLockup)
+		const blockNumber = await getMaxBlockNumber(con, this.getModelObject())
 		const records = await getEventRecord(
 			con,
 			DevPropertyTransfer,
@@ -128,8 +104,10 @@ class AccountLockupCreator extends TimerBatchBase {
 					const lockedup = await this.getLockupedRecord(con, record)
 					const lockedupEventId = lockedup.event_id
 					const oldValue =
-						typeof oldCurrentLockup === 'undefined' ? 0 : oldCurrentLockup.value
-					const insertRecord = new AccounLockup()
+						typeof oldCurrentLockup === 'undefined'
+							? 0
+							: Number(oldCurrentLockup.value)
+					const insertRecord = this.getModel()
 					insertRecord.account_address = accountAddress
 					insertRecord.property_address = propertyAddress
 					insertRecord.value = record.value + oldValue
@@ -153,14 +131,12 @@ class AccountLockupCreator extends TimerBatchBase {
 			await transaction.finish()
 		}
 	}
-}
 
-const timerTrigger: AzureFunction = async function (
-	context: Context,
-	myTimer: any
-): Promise<void> {
-	const dataCreator = new AccountLockupCreator(context, myTimer)
-	await dataCreator.execute()
+	abstract getModelObject<Entity>(): ObjectType<Entity>
+	abstract getModel(): any
+	abstract async getOldRecord(
+		con: Connection,
+		accountAddress: string,
+		propertyAddress: string
+	): Promise<any>
 }
-
-export default timerTrigger

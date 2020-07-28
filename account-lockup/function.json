@@ -1,5 +1,5 @@
 {
-	"scriptFile": "../dist/account_lockup/index.js",
+	"scriptFile": "../dist/account-lockup/index.js",
 	"bindings": [
 		{
 			"name": "myTimer",
