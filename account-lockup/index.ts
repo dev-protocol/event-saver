@@ -1,7 +1,7 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { Connection, ObjectType } from 'typeorm'
 import { LockupInfoCreator } from '../common/lockup'
-import { AccounLockup } from '../entities/account_lockup'
+import { AccountLockup } from '../entities/account-lockup'
 
 class AccountLockupCreator extends LockupInfoCreator {
 	getBatchName(): string {
@@ -9,7 +9,7 @@ class AccountLockupCreator extends LockupInfoCreator {
 	}
 
 	getModelObject<Entity>(): ObjectType<Entity> {
-		return AccounLockup
+		return AccountLockup
 	}
 
 	async getOldRecord(
@@ -31,7 +31,7 @@ class AccountLockupCreator extends LockupInfoCreator {
 	}
 
 	getModel(): any {
-		return new AccounLockup()
+		return new AccountLockup()
 	}
 }
 

@@ -39,7 +39,6 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 			property: propertyAddress,
 			token_value: record.value,
 		})
-
 		if (findRecords.length === 1) {
 			return findRecords[0]
 		}
@@ -110,7 +109,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 					const insertRecord = this.getModel()
 					insertRecord.account_address = accountAddress
 					insertRecord.property_address = propertyAddress
-					insertRecord.value = record.value + oldValue
+					insertRecord.value = Number(record.value) + Number(oldValue)
 					insertRecord.block_number = record.block_number
 					insertRecord.locked_up_event_id = lockedupEventId
 					await transaction.save(insertRecord)

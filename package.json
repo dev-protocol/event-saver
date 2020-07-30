@@ -12,6 +12,7 @@
 		"start:host": "func start",
 		"start": "npm-run-all --parallel start:host watch",
 		"test": "npm run build && jest --runInBand --testTimeout=30000",
+		"test2": "npm run build && jest --silent=false --verbose false test/main/account-lockup/index.ts",
 		"lint": "npm run lint:eslint && npm run lint:format",
 		"lint:eslint": "eslint . --ext .ts --fix",
 		"lint:format": "prettier --write '**/*.{json,md,yml}'"

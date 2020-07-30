@@ -1,7 +1,7 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { Connection, ObjectType } from 'typeorm'
 import { LockupInfoCreator } from '../common/lockup'
-import { PropertyLockup } from '../entities/property_lockup'
+import { PropertyLockup } from '../entities/property-lockup'
 
 class PropertyLockupCreator extends LockupInfoCreator {
 	getBatchName(): string {

@@ -1,10 +1,9 @@
-import { DbConnection } from '../../../common/db/common'
+import { Connection } from 'typeorm'
+import { DbConnection, Transaction } from '../../../common/db/common'
 import { PropertyAddress } from '../../../common/property'
 import { getDbConnection } from './../../lib/db'
-import {
-	savePropertyMetaTestdata,
-	saveContractInfoTestdata,
-} from './../../lib/test-data'
+import { saveContractInfoTestdata, clearData } from './../../lib/test-data'
+import { PropertyMeta } from '../../../entities/property-meta'
 
 describe('PropertyAddress', () => {
 	let con: DbConnection
@@ -113,3 +112,23 @@ describe('PropertyAddress', () => {
 		})
 	})
 })
+
+async function savePropertyMetaTestdata(con: Connection): Promise<void> {
+	await clearData(con, PropertyMeta)
+	const transaction = new Transaction(con)
+	await transaction.start()
+	const propertyMeta = new PropertyMeta()
+
+	propertyMeta.author = 'dummy-auther'
+	propertyMeta.property = '0xD27399E30822E6e4CaB1B6c34d6c78ea1E01BF61'
+	propertyMeta.sender = 'dummy-sender'
+	propertyMeta.block_number = 36
+	propertyMeta.name = 'dummy-name'
+	propertyMeta.symbol = 'dummy-symbol'
+
+	await transaction.save(propertyMeta)
+
+	await transaction.commit()
+
+	await transaction.finish()
+}

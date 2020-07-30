@@ -2,7 +2,7 @@
 import { Entity, Column, PrimaryColumn, BaseEntity } from 'typeorm'
 
 @Entity()
-export class AccounLockup extends BaseEntity {
+export class AccountLockup extends BaseEntity {
 	@PrimaryColumn()
 	public account_address!: string
 
