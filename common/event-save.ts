@@ -39,8 +39,7 @@ export abstract class EventSaver extends TimerBatchBase {
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	async setup(): Promise<void> {}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async isTargetEvent(event: Map<string, any>): Promise<boolean> {
+	async isTargetEvent(_event: Map<string, any>): Promise<boolean> {
 		return true
 	}
 

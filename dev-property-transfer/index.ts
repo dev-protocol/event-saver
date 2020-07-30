@@ -1,14 +1,12 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { ObjectType } from 'typeorm'
-/* eslint-disable @typescript-eslint/no-var-requires */
-const Web3 = require('web3')
 import { EventSaver } from '../common/event-save'
-import { getContractInfo } from '../common/db/contract-info'
-import { DbConnection } from '../common/db/common'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
+import { PropertyAddress } from '../common/property'
 
-class DevPropertySaver extends EventSaver {
+class TransferEventSaver extends EventSaver {
 	private _propertyAddress: PropertyAddress
+
 	async setup(): Promise<void> {
 		this._propertyAddress = new PropertyAddress(this._db)
 		await this._propertyAddress.setup()
@@ -16,7 +14,7 @@ class DevPropertySaver extends EventSaver {
 
 	async isTargetEvent(event: Map<string, any>): Promise<boolean> {
 		const values = event.get('returnValues')
-		let isPropertyAddressFrom = this._propertyAddress.isExistencePropertyAddress(
+		let isPropertyAddressFrom = await this._propertyAddress.isExistencePropertyAddress(
 			values.from
 		)
 		if (!isPropertyAddressFrom) {
@@ -25,7 +23,7 @@ class DevPropertySaver extends EventSaver {
 			)
 		}
 
-		let isPropertyAddressTo = this._propertyAddress.isExistencePropertyAddress(
+		let isPropertyAddressTo = await this._propertyAddress.isExistencePropertyAddress(
 			values.to
 		)
 		if (!isPropertyAddressTo) {
@@ -59,7 +57,7 @@ class DevPropertySaver extends EventSaver {
 		devPropertyTransfer.from_address = values.from
 		devPropertyTransfer.to_address = values.to
 		devPropertyTransfer.value = values.value
-		devPropertyTransfer.is_from_address_property = this._propertyAddress.isExistencePropertyAddress(
+		devPropertyTransfer.is_from_address_property = this._propertyAddress.isSet(
 			values.from
 		)
 		return devPropertyTransfer
@@ -78,50 +76,11 @@ class DevPropertySaver extends EventSaver {
 	}
 }
 
-class PropertyAddress {
-	private readonly _db: DbConnection
-	private readonly _propertySet: Set<string>
-	private _propertyGroupInstance: any
-	constructor(db: DbConnection) {
-		this._db = db
-		this._propertySet = new Set<string>()
-	}
-
-	public async setup(): Promise<void> {
-		const web3 = new Web3(
-			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
-		)
-		const propertyGroupInfo = await getContractInfo(
-			this._db.connection,
-			'PropertyGroup'
-		)
-		this._propertyGroupInstance = await new web3.eth.Contract(
-			JSON.parse(propertyGroupInfo.abi),
-			propertyGroupInfo.address
-		)
-	}
-
-	public isExistencePropertyAddress(address: string): boolean {
-		const checkedAddress = Web3.utils.toChecksumAddress(address)
-		return this._propertySet.has(checkedAddress)
-	}
-
-	public async isPropertyAddress(address: string): Promise<boolean> {
-		const checkedAddress = Web3.utils.toChecksumAddress(address)
-		if (await this._propertyGroupInstance.methods.isGroup(checkedAddress)) {
-			this._propertySet.add(checkedAddress)
-			return true
-		}
-
-		return false
-	}
-}
-
 const timerTrigger: AzureFunction = async function (
 	context: Context,
 	myTimer: any
 ): Promise<void> {
-	const saver = new DevPropertySaver(context, myTimer)
+	const saver = new TransferEventSaver(context, myTimer)
 	await saver.execute()
 }
 
