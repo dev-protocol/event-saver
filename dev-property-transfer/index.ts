@@ -8,7 +8,7 @@ class TransferEventSaver extends EventSaver {
 	private _propertyAddress: PropertyAddress
 
 	async setup(): Promise<void> {
-		this._propertyAddress = new PropertyAddress(this._db)
+		this._propertyAddress = new PropertyAddress(this._db, this._web3)
 		await this._propertyAddress.setup()
 	}
 

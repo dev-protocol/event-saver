@@ -13,10 +13,14 @@ const Web3 = require('web3')
 
 export abstract class EventSaver extends TimerBatchBase {
 	protected readonly _db: DbConnection
+	protected readonly _web3: any
 
 	constructor(context: Context, myTimer: any) {
 		super(context, myTimer)
 		this._db = new DbConnection(this.getBatchName())
+		this._web3 = new Web3(
+			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
+		)
 	}
 
 	async innerExecute(): Promise<void> {
@@ -92,11 +96,8 @@ export abstract class EventSaver extends TimerBatchBase {
 		)
 		const maxBlockNumber = await eventTable.getMaxBlockNumber()
 		const contractInfo = await this._getContractInfo()
-		const web3 = new Web3(
-			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
-		)
-		const approvalBlockNumber = await getApprovalBlockNumber(web3)
-		const event = new Event(web3)
+		const approvalBlockNumber = await getApprovalBlockNumber(this._web3)
+		const event = new Event(this._web3)
 		this.logging.infolog(`target contract address:${contractInfo.address}`)
 		await event.generateContract(
 			JSON.parse(contractInfo.abi),

@@ -7,22 +7,21 @@ const Web3 = require('web3')
 
 export class PropertyAddress {
 	private readonly _db: DbConnection
+	private readonly _web3: any
 	private readonly _propertySet: Set<string>
 	private _propertyGroupInstance: any
-	constructor(db: DbConnection) {
+	constructor(db: DbConnection, web3: any) {
 		this._db = db
+		this._web3 = web3
 		this._propertySet = new Set<string>()
 	}
 
 	public async setup(): Promise<void> {
-		const web3 = new Web3(
-			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
-		)
 		const propertyGroupInfo = await getContractInfo(
 			this._db.connection,
 			'PropertyGroup'
 		)
-		this._propertyGroupInstance = await new web3.eth.Contract(
+		this._propertyGroupInstance = await new this._web3.eth.Contract(
 			JSON.parse(propertyGroupInfo.abi),
 			propertyGroupInfo.address
 		)
@@ -49,9 +48,9 @@ export class PropertyAddress {
 
 	public async isPropertyAddress(address: string): Promise<boolean> {
 		const checkedAddress = Web3.utils.toChecksumAddress(address)
-		const result = await this._propertyGroupInstance.methods.isGroup(
-			checkedAddress
-		)
+		const result = await this._propertyGroupInstance.methods
+			.isGroup(checkedAddress)
+			.call()
 		if (result) {
 			this._propertySet.add(checkedAddress)
 		}

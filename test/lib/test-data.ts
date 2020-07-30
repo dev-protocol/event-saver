@@ -4,6 +4,7 @@ import { LockupLockedup } from '../../entities/lockup-lockedup'
 import { ContractInfo } from '../../entities/contract-info'
 import { GroupContractInfo } from '../../entities/group-contract-info'
 import { LegacyGroupContractInfo } from '../../entities/legacy-group-contract-info'
+import { PropertyMeta } from '../../entities/property-meta'
 
 export async function saveLockupLockupedTestdata(
 	con: Connection,
@@ -48,6 +49,26 @@ export async function saveLockupLockupedTestdata(
 	} else {
 		await transaction.rollback()
 	}
+
+	await transaction.finish()
+}
+
+export async function savePropertyMetaTestdata(con: Connection): Promise<void> {
+	await clearData(con, PropertyMeta)
+	const transaction = new Transaction(con)
+	await transaction.start()
+	const propertyMeta = new PropertyMeta()
+
+	propertyMeta.author = 'dummy-auther'
+	propertyMeta.property = '0xD27399E30822E6e4CaB1B6c34d6c78ea1E01BF61'
+	propertyMeta.sender = 'dummy-sender'
+	propertyMeta.block_number = 36
+	propertyMeta.name = 'dummy-name'
+	propertyMeta.symbol = 'dummy-symbol'
+
+	await transaction.save(propertyMeta)
+
+	await transaction.commit()
 
 	await transaction.finish()
 }
