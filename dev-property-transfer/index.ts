@@ -5,8 +5,6 @@ import { DevPropertyTransfer } from '../entities/dev-property-transfer'
 import { PropertyAddress } from '../common/property'
 
 class TransferEventSaver extends ExtractedEventSaver {
-	// eslint-disable-next-line @typescript-eslint/class-literal-property-style
-	private readonly _BLOCK_NUMBER_KEY_NAME = 'dev-property-transfer'
 	private _propertyAddress: PropertyAddress
 
 	async setup(): Promise<void> {
@@ -16,22 +14,25 @@ class TransferEventSaver extends ExtractedEventSaver {
 
 	async isTargetEvent(event: Map<string, any>): Promise<boolean> {
 		const values = event.get('returnValues')
-		let isPropertyAddressFrom = await this._propertyAddress.isExistencePropertyAddress(
-			values.from
-		)
+		const speedup =
+			typeof process.env.DEV_PROPERTY_TRANSFER_SPEED_UP !== 'undefined'
+		let isPropertyAddressFrom = this._propertyAddress.isSet(values.from)
+
 		if (!isPropertyAddressFrom) {
-			isPropertyAddressFrom = await this._propertyAddress.isPropertyAddress(
-				values.from
-			)
+			if (!speedup) {
+				isPropertyAddressFrom = await this._propertyAddress.isPropertyAddress(
+					values.from
+				)
+			}
 		}
 
-		let isPropertyAddressTo = await this._propertyAddress.isExistencePropertyAddress(
-			values.to
-		)
+		let isPropertyAddressTo = this._propertyAddress.isSet(values.to)
 		if (!isPropertyAddressTo) {
-			isPropertyAddressTo = await this._propertyAddress.isPropertyAddress(
-				values.to
-			)
+			if (!speedup) {
+				isPropertyAddressTo = await this._propertyAddress.isPropertyAddress(
+					values.to
+				)
+			}
 		}
 
 		if (isPropertyAddressFrom && isPropertyAddressTo) {

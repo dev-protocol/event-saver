@@ -130,11 +130,9 @@ export abstract class ExtractedEventSaver extends TimerBatchBase {
 		try {
 			await this._db.connect()
 			await this.setup()
-			const events = await this._getEvents()
-			if (events.length !== 0) {
-				const number = await this._saveEvents(events)
-				this.logging.infolog('save ' + String(number) + ' data')
-			}
+			const [events, endBlockNumber] = await this._getEvents()
+			const number = await this._saveEvents(events, endBlockNumber)
+			this.logging.infolog('save ' + String(number) + ' data')
 			// eslint-disable-next-line no-useless-catch
 		} catch (err) {
 			throw err
@@ -146,20 +144,26 @@ export abstract class ExtractedEventSaver extends TimerBatchBase {
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	async setup(): Promise<void> {}
 
-	private async _saveEvents(events: Array<Map<string, any>>): Promise<number> {
+	private async _saveEvents(
+		events: Array<Map<string, any>>,
+		endBlockNumber: number
+	): Promise<number> {
 		const eventTable = new EventTableAccessor(
 			this._db.connection,
 			this.getModelObject()
 		)
 		const transaction = new Transaction(this._db.connection)
 		let count = 0
-		let maxBlockNumber = 0
+		let processed = 0
 		try {
 			await transaction.start()
 			for (let event of events) {
+				processed++
+				if (processed % 10 === 0) {
+					this.logging.infolog(`records were processed：${processed}`)
+				}
+
 				const eventMap = new Map(Object.entries(event))
-				const blockNumber = Number(eventMap.get('blockNumber'))
-				maxBlockNumber = Math.max(maxBlockNumber, blockNumber)
 				// eslint-disable-next-line no-await-in-loop
 				const isTarget = await this.isTargetEvent(eventMap)
 				if (!isTarget) {
@@ -187,7 +191,7 @@ export abstract class ExtractedEventSaver extends TimerBatchBase {
 			await setProcessedBlockNumber(
 				transaction,
 				this.getBatchName(),
-				maxBlockNumber
+				endBlockNumber
 			)
 			await transaction.commit()
 		} catch (err) {
@@ -200,25 +204,32 @@ export abstract class ExtractedEventSaver extends TimerBatchBase {
 		return count
 	}
 
-	private async _getEvents(): Promise<Array<Map<string, any>>> {
-		const maxBlockNumber = await getProcessedBlockNumber(
+	private async _getEvents(): Promise<[Array<Map<string, any>>, number]> {
+		const startBlockNumber = await getProcessedBlockNumber(
 			this._db.connection,
 			this.getBatchName()
 		)
 		const contractInfo = await this._getContractInfo()
 		const approvalBlockNumber = await getApprovalBlockNumber(this._web3)
+		const endBlockNumber = Math.min(
+			startBlockNumber + 30000,
+			approvalBlockNumber
+		)
 		const event = new Event(this._web3)
 		this.logging.infolog(`target contract address:${contractInfo.address}`)
 		await event.generateContract(
 			JSON.parse(contractInfo.abi),
 			contractInfo.address
 		)
+		this.logging.infolog(`start block number:${startBlockNumber}`)
+		this.logging.infolog(`end block number:${endBlockNumber}`)
 		const events = await event.getEvent(
 			this.getEventName(),
-			Number(maxBlockNumber) + 1,
-			approvalBlockNumber
+			Number(startBlockNumber) + 1,
+			endBlockNumber
 		)
-		return events
+		this.logging.infolog(`event data:${events.length}`)
+		return [events, endBlockNumber]
 	}
 
 	private async _getContractInfo(): Promise<ContractInfo> {

@@ -25,25 +25,19 @@ export class PropertyAddress {
 			JSON.parse(propertyGroupInfo.abi),
 			propertyGroupInfo.address
 		)
+		const records = await this._db.connection
+			.getRepository(PropertyMeta)
+			.createQueryBuilder('tmp')
+			.getMany()
+		records.forEach((record) => {
+			const checkedAddress = Web3.utils.toChecksumAddress(record.property)
+			this._propertySet.add(checkedAddress)
+		})
 	}
 
 	public isSet(address: string): boolean {
 		const checkedAddress = Web3.utils.toChecksumAddress(address)
 		return this._propertySet.has(checkedAddress)
-	}
-
-	public async isExistencePropertyAddress(address: string): Promise<boolean> {
-		const checkedAddress = Web3.utils.toChecksumAddress(address)
-		if (this._propertySet.has(checkedAddress)) {
-			return true
-		}
-
-		const result = await this._existPropertyAddress(checkedAddress)
-		if (result) {
-			this._propertySet.add(checkedAddress)
-		}
-
-		return result
 	}
 
 	public async isPropertyAddress(address: string): Promise<boolean> {
@@ -56,13 +50,5 @@ export class PropertyAddress {
 		}
 
 		return result
-	}
-
-	private async _existPropertyAddress(address: string): Promise<boolean> {
-		const repository = this._db.connection.getRepository(PropertyMeta)
-		const record = await repository.findOne({
-			property: address,
-		})
-		return typeof record !== 'undefined'
 	}
 }

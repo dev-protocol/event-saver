@@ -24,7 +24,7 @@ jest.mock('../../../common/block-chain/utils')
 jest.mock('../../../common/block-chain/event')
 jest.mock('../../../common/property')
 mocked(getApprovalBlockNumber).mockImplementation(async () =>
-	Promise.resolve(10)
+	Promise.resolve(1000000000)
 )
 
 const timer = getTimerMock()
@@ -159,7 +159,7 @@ describe('timerTrigger', () => {
 			ProcessedBlockNumber,
 			'dev-property-transfer'
 		)
-		expect(record2.block_number).toBe(12349)
+		expect(record2.block_number).toBe(100000)
 	})
 	afterAll(async () => {
 		await con.quit()
