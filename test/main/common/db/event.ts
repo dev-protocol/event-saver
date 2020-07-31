@@ -1,8 +1,10 @@
-import { DbConnection } from '../../../../common/db/common'
+import { DbConnection, Transaction } from '../../../../common/db/common'
 import {
 	EventTableAccessor,
 	getMaxBlockNumber,
 	getEventRecord,
+	getProcessedBlockNumber,
+	setProcessedBlockNumber
 } from '../../../../common/db/event'
 import { LockupLockedup } from '../../../../entities/lockup-lockedup'
 import { getDbConnection } from './../../../lib/db'
@@ -88,5 +90,30 @@ describe('getEventRecord', () => {
 		await saveLockupLockupedTestdata(con.connection)
 		const records = await getEventRecord(con.connection, LockupLockedup, 33000)
 		expect(records.length).toBe(0)
+	})
+})
+
+describe('getProcessedBlockNumber,setProcessedBlockNumber', () => {
+	let con: DbConnection
+	beforeAll(async (done) => {
+		con = await getDbConnection()
+		done()
+	})
+	afterAll(async (done) => {
+		await con.quit()
+		done()
+	})
+	it('If the record does not exist, it returns 0.', async () => {
+		const blockNumber = await getProcessedBlockNumber(con.connection, 'test')
+		expect(blockNumber).toBe(0)
+	})
+	it('It returns the value you set.', async () => {
+		const transaction = new Transaction(con.connection)
+		await transaction.start()
+		await setProcessedBlockNumber(transaction, 'test', 999)
+		await transaction.commit()
+		await transaction.finish()
+		const blockNumber = await getProcessedBlockNumber(con.connection, 'test')
+		expect(blockNumber).toBe(999)
 	})
 })
