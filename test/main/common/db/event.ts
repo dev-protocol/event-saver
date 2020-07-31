@@ -4,7 +4,7 @@ import {
 	getMaxBlockNumber,
 	getEventRecord,
 	getProcessedBlockNumber,
-	setProcessedBlockNumber
+	setProcessedBlockNumber,
 } from '../../../../common/db/event'
 import { LockupLockedup } from '../../../../entities/lockup-lockedup'
 import { getDbConnection } from './../../../lib/db'
