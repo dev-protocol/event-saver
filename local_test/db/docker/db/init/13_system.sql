@@ -44,6 +44,11 @@ INSERT INTO legacy_group_contract_info VALUES ('MarketBehavior', '0x52E5cbE96ebe
 
 
 
+CREATE TABLE processed_block_number(
+    key_name TEXT NOT NULL,
+	block_number INT NOT NULL,
+    PRIMARY KEY(key_name)
+);
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 

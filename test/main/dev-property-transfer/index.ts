@@ -14,6 +14,7 @@ import { getApprovalBlockNumber } from '../../../common/block-chain/utils'
 import { Event } from '../../../common/block-chain/event'
 import { PropertyAddress } from '../../../common/property'
 import { DevPropertyTransfer } from '../../../entities/dev-property-transfer'
+import { ProcessedBlockNumber } from '../../../entities/processed-block-number'
 
 const context = getContextMock()
 const undefindMock = jest.fn().mockResolvedValue(undefined)
@@ -47,6 +48,7 @@ describe('timerTrigger', () => {
 	})
 	beforeEach(async () => {
 		await clearData(con.connection, DevPropertyTransfer)
+		await clearData(con.connection, ProcessedBlockNumber)
 	})
 	it('Register data as many events as there are.', async () => {
 		mocked(Event).mockImplementation((): any => {
@@ -115,9 +117,10 @@ describe('timerTrigger', () => {
 			}
 		})
 		await timerTrigger(context, timer)
-		const count = await getCount(con.connection, DevPropertyTransfer)
+		let count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(2)
-
+		count = await getCount(con.connection, ProcessedBlockNumber)
+		expect(count).toBe(1)
 		const manager = new EntityManager(con.connection)
 		let record = await manager.findOneOrFail(
 			DevPropertyTransfer,
@@ -151,6 +154,12 @@ describe('timerTrigger', () => {
 		expect(rawData.id).toBe('dummy-event-id3')
 		expect(rawData.returnValues.from).toBe('dummy-from-address3')
 		expect(rawData.returnValues.to).toBe('dummy-to-address3')
+
+		const record2 = await manager.findOneOrFail(
+			ProcessedBlockNumber,
+			'dev-property-transfer'
+		)
+		expect(record2.block_number).toBe(12349)
 	})
 	afterAll(async () => {
 		await con.quit()

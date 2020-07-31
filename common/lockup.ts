@@ -1,9 +1,13 @@
 /* eslint-disable no-await-in-loop */
-import { Connection, ObjectType } from 'typeorm'
+import { Connection, EntityManager } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
-import { getMaxBlockNumber, getEventRecord } from '../common/db/event'
+import {
+	getEventRecord,
+	getProcessedBlockNumber,
+	setProcessedBlockNumber,
+} from '../common/db/event'
 import { LockupLockedup } from '../entities/lockup-lockedup'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
 
@@ -61,7 +65,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 	}
 
 	private async createCurrentLockupRecord(con: Connection): Promise<void> {
-		const blockNumber = await getMaxBlockNumber(con, this.getModelObject())
+		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		const records = await getEventRecord(
 			con,
 			DevPropertyTransfer,
@@ -79,16 +83,18 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 			await transaction.start()
 			this.logging.infolog(`record count：${targetRecords.length}`)
 			let count = 0
+			let maxBlockNumber = 0
 			for (let record of targetRecords) {
 				const [
 					accountAddress,
 					propertyAddress,
 				] = await this.getAddressFromDevPropertyTransfer(record)
 				const oldCurrentLockup = await this.getOldRecord(
-					con,
+					transaction.manager,
 					accountAddress,
 					propertyAddress
 				)
+				maxBlockNumber = Math.max(maxBlockNumber, record.block_number)
 				if (record.is_from_address_property) {
 					if (typeof oldCurrentLockup === 'undefined') {
 						continue
@@ -110,17 +116,21 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 					insertRecord.account_address = accountAddress
 					insertRecord.property_address = propertyAddress
 					insertRecord.value = Number(record.value) + Number(oldValue)
-					insertRecord.block_number = record.block_number
 					insertRecord.locked_up_event_id = lockedupEventId
 					await transaction.save(insertRecord)
 				}
 
 				count++
 				if (count % 10 === 0) {
-					this.logging.infolog(`records were inserted：${count}`)
+					this.logging.infolog(`records were processed：${count}`)
 				}
 			}
 
+			await setProcessedBlockNumber(
+				transaction,
+				this.getBatchName(),
+				maxBlockNumber
+			)
 			await transaction.commit()
 			this.logging.infolog(`all records were inserted：${targetRecords.length}`)
 		} catch (e) {
@@ -131,10 +141,9 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 		}
 	}
 
-	abstract getModelObject<Entity>(): ObjectType<Entity>
 	abstract getModel(): any
 	abstract async getOldRecord(
-		con: Connection,
+		manager: EntityManager,
 		accountAddress: string,
 		propertyAddress: string
 	): Promise<any>

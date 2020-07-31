@@ -14,7 +14,4 @@ export class AccountLockup extends BaseEntity {
 
 	@Column()
 	public locked_up_event_id!: string
-
-	@Column()
-	public block_number!: number
 }

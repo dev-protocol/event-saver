@@ -1,10 +1,12 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { ObjectType } from 'typeorm'
-import { EventSaver } from '../common/event-save'
+import { ExtractedEventSaver } from '../common/event-save'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
 import { PropertyAddress } from '../common/property'
 
-class TransferEventSaver extends EventSaver {
+class TransferEventSaver extends ExtractedEventSaver {
+	// eslint-disable-next-line @typescript-eslint/class-literal-property-style
+	private readonly _BLOCK_NUMBER_KEY_NAME = 'dev-property-transfer'
 	private _propertyAddress: PropertyAddress
 
 	async setup(): Promise<void> {

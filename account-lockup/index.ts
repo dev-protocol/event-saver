@@ -1,5 +1,5 @@
 import { AzureFunction, Context } from '@azure/functions'
-import { Connection, ObjectType } from 'typeorm'
+import { EntityManager } from 'typeorm'
 import { LockupInfoCreator } from '../common/lockup'
 import { AccountLockup } from '../entities/account-lockup'
 
@@ -8,26 +8,21 @@ class AccountLockupCreator extends LockupInfoCreator {
 		return 'account-lockup'
 	}
 
-	getModelObject<Entity>(): ObjectType<Entity> {
-		return AccountLockup
-	}
-
 	async getOldRecord(
-		con: Connection,
+		manager: EntityManager,
 		accountAddress: string,
 		propertyAddress: string
 	): Promise<any> {
-		const repository = con.getRepository(this.getModelObject())
-
-		const findRecords = await repository.findOne({
+		const findRecord = await manager.findOne(AccountLockup, {
 			account_address: accountAddress,
 			property_address: propertyAddress,
 		})
-		if (typeof findRecords === 'undefined') {
+
+		if (typeof findRecord === 'undefined') {
 			return undefined
 		}
 
-		return findRecords
+		return findRecord
 	}
 
 	getModel(): any {

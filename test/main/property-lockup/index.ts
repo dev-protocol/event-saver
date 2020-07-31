@@ -7,9 +7,9 @@ import {
 } from '../../lib/test-data'
 import { getDbConnection } from '../../lib/db'
 
-import timerTrigger from '../../../account-lockup/index'
+import timerTrigger from '../../../property-lockup/index'
 import { DbConnection, Transaction } from '../../../common/db/common'
-import { AccountLockup } from '../../../entities/account-lockup'
+import { PropertyLockup } from '../../../entities/property-lockup'
 import { DevPropertyTransfer } from '../../../entities/dev-property-transfer'
 import { LockupLockedup } from '../../../entities/lockup-lockedup'
 import { ProcessedBlockNumber } from '../../../entities/processed-block-number'
@@ -28,13 +28,13 @@ describe('timerTrigger', () => {
 		await saveContractInfoTestdata(con.connection)
 	})
 	beforeEach(async () => {
-		await clearData(con.connection, AccountLockup)
+		await clearData(con.connection, PropertyLockup)
 		await clearData(con.connection, ProcessedBlockNumber)
 		await clearData(con.connection, DevPropertyTransfer)
 	})
 	it('If the target record does not exist, nothing is processed.', async () => {
 		await timerTrigger(context, timer)
-		let count = await getCount(con.connection, AccountLockup)
+		let count = await getCount(con.connection, PropertyLockup)
 		expect(count).toBe(0)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(0)
@@ -44,11 +44,11 @@ describe('timerTrigger', () => {
 	it('Save the lockup data if the target record exists.', async () => {
 		await saveTestData1(con.connection)
 		await timerTrigger(context, timer)
-		let count = await getCount(con.connection, AccountLockup)
+		let count = await getCount(con.connection, PropertyLockup)
 		expect(count).toBe(1)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(1)
-		const repository = con.connection.getRepository(AccountLockup)
+		const repository = con.connection.getRepository(PropertyLockup)
 
 		const record = await repository.findOne({
 			account_address: 'dummy-from-address1',
@@ -61,7 +61,7 @@ describe('timerTrigger', () => {
 		expect(record.locked_up_event_id).toBe('dummy-lockup-event-id1')
 		const blockNumber = await getProcessedBlockNumber(
 			con.connection,
-			'account-lockup'
+			'property-lockup'
 		)
 		expect(blockNumber).toBe(300000)
 	})
@@ -70,11 +70,11 @@ describe('timerTrigger', () => {
 		await timerTrigger(context, timer)
 		await saveTestData2(con.connection)
 		await timerTrigger(context, timer)
-		let count = await getCount(con.connection, AccountLockup)
+		let count = await getCount(con.connection, PropertyLockup)
 		expect(count).toBe(2)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(2)
-		const repository = con.connection.getRepository(AccountLockup)
+		const repository = con.connection.getRepository(PropertyLockup)
 
 		const record = await repository.findOne({
 			account_address: 'dummy-from-address2',
@@ -87,7 +87,7 @@ describe('timerTrigger', () => {
 		expect(record.locked_up_event_id).toBe('dummy-lockup-event-id2')
 		const blockNumber = await getProcessedBlockNumber(
 			con.connection,
-			'account-lockup'
+			'property-lockup'
 		)
 		expect(blockNumber).toBe(310000)
 	})
@@ -95,11 +95,11 @@ describe('timerTrigger', () => {
 		await saveTestData1(con.connection)
 		await saveTestData3(con.connection)
 		await timerTrigger(context, timer)
-		let count = await getCount(con.connection, AccountLockup)
+		let count = await getCount(con.connection, PropertyLockup)
 		expect(count).toBe(1)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(2)
-		const repository = con.connection.getRepository(AccountLockup)
+		const repository = con.connection.getRepository(PropertyLockup)
 
 		const record = await repository.findOne({
 			account_address: 'dummy-from-address1',
@@ -112,21 +112,21 @@ describe('timerTrigger', () => {
 		expect(record.locked_up_event_id).toBe('dummy-lockup-event-id2')
 		const blockNumber = await getProcessedBlockNumber(
 			con.connection,
-			'account-lockup'
+			'property-lockup'
 		)
 		expect(blockNumber).toBe(310000)
 	}, 10000)
 	it('Ignore if there is no lockup information in the withdraw event.', async () => {
 		await saveTestData4(con.connection)
 		await timerTrigger(context, timer)
-		let count = await getCount(con.connection, AccountLockup)
+		let count = await getCount(con.connection, PropertyLockup)
 		expect(count).toBe(0)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(1)
 
 		const blockNumber = await getProcessedBlockNumber(
 			con.connection,
-			'account-lockup'
+			'property-lockup'
 		)
 		expect(blockNumber).toBe(300030)
 	})
@@ -143,21 +143,21 @@ describe('timerTrigger', () => {
 		await saveTestData1(con.connection)
 		await saveTestData4(con.connection)
 		await timerTrigger(context, timer)
-		let count = await getCount(con.connection, AccountLockup)
+		let count = await getCount(con.connection, PropertyLockup)
 		expect(count).toBe(0)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(2)
 
 		const blockNumber = await getProcessedBlockNumber(
 			con.connection,
-			'account-lockup'
+			'property-lockup'
 		)
 		expect(blockNumber).toBe(300030)
 	})
 	it('Up to 100 records can be processed at a time.', async () => {
 		await saveManyTestData(con.connection)
 		await timerTrigger(context, timer)
-		let count = await getCount(con.connection, AccountLockup)
+		let count = await getCount(con.connection, PropertyLockup)
 		expect(count).toBe(100)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(120)
