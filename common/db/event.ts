@@ -1,4 +1,6 @@
-import { ObjectType, Connection } from 'typeorm'
+import { ObjectType, Connection, EntityManager } from 'typeorm'
+import { ProcessedBlockNumber } from '../../entities/processed-block-number'
+import { Transaction } from './common'
 
 export class EventTableAccessor<Entity> {
 	private readonly _connection: Connection
@@ -38,6 +40,30 @@ export async function getMaxBlockNumber<Entity>(
 	}
 
 	return Number(max)
+}
+
+export async function getProcessedBlockNumber(
+	connection: Connection,
+	batchName: string
+): Promise<number> {
+	const manager = new EntityManager(connection)
+	const record = await manager.findOne(ProcessedBlockNumber, batchName)
+	if (typeof record === 'undefined') {
+		return 0
+	}
+
+	return record.block_number
+}
+
+export async function setProcessedBlockNumber(
+	transaction: Transaction,
+	batchName: string,
+	blockNumber: number
+): Promise<void> {
+	const saveData = new ProcessedBlockNumber()
+	saveData.key_name = batchName
+	saveData.block_number = blockNumber
+	await transaction.save(saveData)
 }
 
 export async function getEventRecord<Entity>(

@@ -1,4 +1,10 @@
-import { createConnection, BaseEntity, Connection, QueryRunner } from 'typeorm'
+import {
+	createConnection,
+	BaseEntity,
+	Connection,
+	QueryRunner,
+	EntityManager,
+} from 'typeorm'
 
 export class DbConnection {
 	private readonly _batchName: string
@@ -48,6 +54,10 @@ export class Transaction {
 
 	constructor(connection: Connection) {
 		this._runner = connection.createQueryRunner()
+	}
+
+	get manager(): EntityManager {
+		return this._runner.manager
 	}
 
 	public async start(): Promise<void> {

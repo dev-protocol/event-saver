@@ -1,0 +1,11 @@
+{
+	"scriptFile": "../dist/account-lockup/index.js",
+	"bindings": [
+		{
+			"name": "myTimer",
+			"type": "timerTrigger",
+			"direction": "in",
+			"schedule": "0 3 * * * *"
+		}
+	]
+}
