@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { Connection, EntityManager } from 'typeorm'
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
