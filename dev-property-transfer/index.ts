@@ -60,9 +60,7 @@ class TransferEventSaver extends ExtractedEventSaver {
 		devPropertyTransfer.from_address = values.from
 		devPropertyTransfer.to_address = values.to
 		devPropertyTransfer.value = values.value
-		devPropertyTransfer.is_from_address_property = this._propertyAddress.isSet(
-			values.from
-		)
+		devPropertyTransfer.is_lockup = this._propertyAddress.isSet(values.to)
 		return devPropertyTransfer
 	}
 

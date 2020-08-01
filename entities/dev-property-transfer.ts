@@ -25,7 +25,7 @@ export class DevPropertyTransfer extends BaseEntity {
 	public value!: number
 
 	@Column()
-	public is_from_address_property!: boolean
+	public is_lockup!: boolean
 
 	@Column()
 	public raw_data!: string
