@@ -42,6 +42,22 @@ export async function getMaxBlockNumber<Entity>(
 	return Number(max)
 }
 
+export async function getMinBlockNumber<Entity>(
+	connection: Connection,
+	entityClass: ObjectType<Entity>
+): Promise<number> {
+	let { min } = await connection
+		.getRepository(entityClass)
+		.createQueryBuilder()
+		.select('MIN(block_number)', 'min')
+		.getRawOne()
+	if (min === null) {
+		min = 0
+	}
+
+	return Number(min)
+}
+
 export async function getProcessedBlockNumber(
 	connection: Connection,
 	batchName: string

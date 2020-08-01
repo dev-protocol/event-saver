@@ -69,6 +69,12 @@ npm start
 market-factory-createを実行したい場合
 
 curl --request POST -H "Content-Type:application/json" --data '{}' http://localhost:7071/admin/functions/market-factory-create
+
+host.jsonに
+
+	"functions": ["dev-property-transfer"]
+
+と記載すると指定した関数のみ起動するため、便利
 ```
 
 ## コンソールセットアップ

@@ -2,6 +2,7 @@ import { DbConnection, Transaction } from '../../../../common/db/common'
 import {
 	EventTableAccessor,
 	getMaxBlockNumber,
+	getMinBlockNumber,
 	getEventRecord,
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
@@ -53,6 +54,28 @@ describe('getMaxBlockNumber', () => {
 		await saveLockupLockupedTestdata(con.connection)
 		const blockNUmber = await getMaxBlockNumber(con.connection, LockupLockedup)
 		expect(blockNUmber).toBe(32000)
+	})
+	it('If the record exists, get 0.', async () => {
+		await clearData(con.connection, LockupLockedup)
+		const blockNUmber = await getMaxBlockNumber(con.connection, LockupLockedup)
+		expect(blockNUmber).toBe(0)
+	})
+})
+
+describe('getMinBlockNumber', () => {
+	let con: DbConnection
+	beforeAll(async (done) => {
+		con = await getDbConnection()
+		done()
+	})
+	afterAll(async (done) => {
+		await con.quit()
+		done()
+	})
+	it('If the record exists, get the maximum block number.', async () => {
+		await saveLockupLockupedTestdata(con.connection)
+		const blockNUmber = await getMinBlockNumber(con.connection, LockupLockedup)
+		expect(blockNUmber).toBe(30000)
 	})
 	it('If the record exists, get 0.', async () => {
 		await clearData(con.connection, LockupLockedup)

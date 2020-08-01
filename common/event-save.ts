@@ -212,7 +212,7 @@ export abstract class ExtractedEventSaver extends TimerBatchBase {
 		const contractInfo = await this._getContractInfo()
 		const approvalBlockNumber = await getApprovalBlockNumber(this._web3)
 		const endBlockNumber = Math.min(
-			startBlockNumber + 30000,
+			startBlockNumber + 50000,
 			approvalBlockNumber
 		)
 		const event = new Event(this._web3)

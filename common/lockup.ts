@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { Connection, EntityManager } from 'typeorm'
+import BigNumber from 'bignumber.js';
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
@@ -7,9 +8,12 @@ import {
 	getEventRecord,
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
+	getMinBlockNumber,
 } from '../common/db/event'
 import { LockupLockedup } from '../entities/lockup-lockedup'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
+import { AccountLockup } from '../entities/account-lockup'
+import { PropertyLockup } from '../entities/property-lockup'
 
 export abstract class LockupInfoCreator extends TimerBatchBase {
 	async innerExecute(): Promise<void> {
@@ -26,10 +30,10 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 		}
 	}
 
-	private async getLockupedRecord(
+	private async getLockupId(
 		con: Connection,
 		record: DevPropertyTransfer
-	): Promise<LockupLockedup> {
+	): Promise<string> {
 		const repository = con.getRepository(LockupLockedup)
 		const [
 			walletAddress,
@@ -44,7 +48,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 			token_value: record.value,
 		})
 		if (findRecords.length === 1) {
-			return findRecords[0]
+			return findRecords[0].event_id
 		}
 
 		if (findRecords.length === 0) {
@@ -65,7 +69,9 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 	}
 
 	private async createCurrentLockupRecord(con: Connection): Promise<void> {
+		const lockupMinBlockNumber = await getMinBlockNumber(con, LockupLockedup)
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
+		this.logging.infolog(`start block number：${blockNumber + 1}`)
 		const records = await getEventRecord(
 			con,
 			DevPropertyTransfer,
@@ -96,8 +102,10 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 				)
 				maxBlockNumber = Math.max(maxBlockNumber, record.block_number)
 				if (record.is_lockup) {
-					const lockedup = await this.getLockupedRecord(con, record)
-					const lockedupEventId = lockedup.event_id
+					const lockedupEventId =
+						record.block_number < lockupMinBlockNumber
+							? 'dummy-lockup-id'
+							: await this.getLockupId(con, record)
 					const oldValue =
 						typeof oldCurrentLockup === 'undefined'
 							? 0
@@ -105,7 +113,8 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 					const insertRecord = this.getModel()
 					insertRecord.account_address = accountAddress
 					insertRecord.property_address = propertyAddress
-					insertRecord.value = Number(record.value) + Number(oldValue)
+					const tmp = new BigNumber(record.value).plus(new BigNumber(oldValue))
+					insertRecord.value = tmp.toString()
 					insertRecord.locked_up_event_id = lockedupEventId
 					await transaction.save(insertRecord)
 				} else {
@@ -113,7 +122,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 						continue
 					}
 
-					if (oldCurrentLockup.value !== record.value) {
+					if (oldCurrentLockup.value !== record.value.toString()) {
 						throw new Error('the values of lockup and withdraw are different.')
 					}
 
@@ -141,10 +150,10 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 		}
 	}
 
-	abstract getModel(): any
+	abstract getModel(): AccountLockup | PropertyLockup
 	abstract async getOldRecord(
 		manager: EntityManager,
 		accountAddress: string,
 		propertyAddress: string
-	): Promise<any>
+	): Promise<AccountLockup | PropertyLockup>
 }

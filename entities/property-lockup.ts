@@ -10,7 +10,7 @@ export class PropertyLockup extends BaseEntity {
 	public account_address!: string
 
 	@Column()
-	public value!: number
+	public value!: string
 
 	@Column()
 	public locked_up_event_id!: string

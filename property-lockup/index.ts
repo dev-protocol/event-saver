@@ -12,7 +12,7 @@ class PropertyLockupCreator extends LockupInfoCreator {
 		manager: EntityManager,
 		accountAddress: string,
 		propertyAddress: string
-	): Promise<any> {
+	): Promise<PropertyLockup> {
 		const findRecord = await manager.findOne(PropertyLockup, {
 			account_address: accountAddress,
 			property_address: propertyAddress,
@@ -25,7 +25,7 @@ class PropertyLockupCreator extends LockupInfoCreator {
 		return findRecord
 	}
 
-	getModel(): any {
+	getModel(): PropertyLockup {
 		return new PropertyLockup()
 	}
 }
