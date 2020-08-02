@@ -134,7 +134,7 @@ describe('timerTrigger', () => {
 		expect(record.from_address).toBe('dummy-from-address2')
 		expect(record.to_address).toBe('dummy-to-address2')
 		expect(record.value).toBe('100')
-		expect(record.is_from_address_property).toBe(true)
+		expect(record.is_lockup).toBe(false)
 		let rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id2')
 		expect(rawData.returnValues.from).toBe('dummy-from-address2')
@@ -149,7 +149,7 @@ describe('timerTrigger', () => {
 		expect(record.from_address).toBe('dummy-from-address3')
 		expect(record.to_address).toBe('dummy-to-address3')
 		expect(record.value).toBe('1000')
-		expect(record.is_from_address_property).toBe(false)
+		expect(record.is_lockup).toBe(true)
 		rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id3')
 		expect(rawData.returnValues.from).toBe('dummy-from-address3')
@@ -159,7 +159,7 @@ describe('timerTrigger', () => {
 			ProcessedBlockNumber,
 			'dev-property-transfer'
 		)
-		expect(record2.block_number).toBe(100000)
+		expect(record2.block_number).toBe(30000)
 	})
 	afterAll(async () => {
 		await con.quit()

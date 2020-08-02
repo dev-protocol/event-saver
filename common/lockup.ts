@@ -57,11 +57,11 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 	private async getAddressFromDevPropertyTransfer(
 		record: DevPropertyTransfer
 	): Promise<string[]> {
-		if (record.is_from_address_property) {
-			return [record.to_address, record.from_address]
+		if (record.is_lockup) {
+			return [record.from_address, record.to_address]
 		}
 
-		return [record.from_address, record.to_address]
+		return [record.to_address, record.from_address]
 	}
 
 	private async createCurrentLockupRecord(con: Connection): Promise<void> {
@@ -95,17 +95,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 					propertyAddress
 				)
 				maxBlockNumber = Math.max(maxBlockNumber, record.block_number)
-				if (record.is_from_address_property) {
-					if (typeof oldCurrentLockup === 'undefined') {
-						continue
-					}
-
-					if (oldCurrentLockup.value !== record.value) {
-						throw new Error('the values of lockup and withdraw are different.')
-					}
-
-					await transaction.remove(oldCurrentLockup)
-				} else {
+				if (record.is_lockup) {
 					const lockedup = await this.getLockupedRecord(con, record)
 					const lockedupEventId = lockedup.event_id
 					const oldValue =
@@ -118,6 +108,16 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 					insertRecord.value = Number(record.value) + Number(oldValue)
 					insertRecord.locked_up_event_id = lockedupEventId
 					await transaction.save(insertRecord)
+				} else {
+					if (typeof oldCurrentLockup === 'undefined') {
+						continue
+					}
+
+					if (oldCurrentLockup.value !== record.value) {
+						throw new Error('the values of lockup and withdraw are different.')
+					}
+
+					await transaction.remove(oldCurrentLockup)
 				}
 
 				count++

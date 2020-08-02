@@ -178,7 +178,7 @@ async function saveTestData1(con: Connection) {
 	record.from_address = 'dummy-from-address1'
 	record.to_address = 'dummy-to-address1'
 	record.value = 30000
-	record.is_from_address_property = false
+	record.is_lockup = true
 	record.raw_data = '{}'
 	await transaction.save(record)
 
@@ -208,7 +208,7 @@ async function saveTestData4(con: Connection) {
 	record.from_address = 'dummy-to-address1'
 	record.to_address = 'dummy-from-address1'
 	record.value = 30000
-	record.is_from_address_property = true
+	record.is_lockup = false
 	record.raw_data = '{}'
 	await transaction.save(record)
 
@@ -227,7 +227,7 @@ async function saveTestData5(con: Connection) {
 	record.from_address = 'dummy-to-address1'
 	record.to_address = 'dummy-from-address1'
 	record.value = 30001
-	record.is_from_address_property = true
+	record.is_lockup = false
 	record.raw_data = '{}'
 	await transaction.save(record)
 
@@ -246,7 +246,7 @@ async function saveTestData2(con: Connection) {
 	record.from_address = 'dummy-from-address2'
 	record.to_address = 'dummy-to-address2'
 	record.value = 10
-	record.is_from_address_property = false
+	record.is_lockup = true
 	record.raw_data = '{}'
 	await transaction.save(record)
 
@@ -276,7 +276,7 @@ async function saveTestData3(con: Connection) {
 	record.from_address = 'dummy-from-address1'
 	record.to_address = 'dummy-to-address1'
 	record.value = 10
-	record.is_from_address_property = false
+	record.is_lockup = true
 	record.raw_data = '{}'
 	await transaction.save(record)
 
@@ -308,7 +308,7 @@ async function saveManyTestData(con: Connection) {
 		record.from_address = `dummy-from-address${i}`
 		record.to_address = `dummy-to-address${i}`
 		record.value = 30000 + i
-		record.is_from_address_property = false
+		record.is_lockup = true
 		record.raw_data = '{}'
 		// eslint-disable-next-line no-await-in-loop
 		await transaction.save(record)
