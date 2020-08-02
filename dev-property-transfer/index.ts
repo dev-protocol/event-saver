@@ -10,12 +10,16 @@ class TransferEventSaver extends ExtractedEventSaver {
 	async setup(): Promise<void> {
 		this._propertyAddress = new PropertyAddress(this._db, this._web3)
 		await this._propertyAddress.setup()
+		const speedup =
+			typeof process.env.DEV_PROPERTY_TRANSFER_SPEED_UP !== 'undefined'
+		this.logging.infolog(`spped up:${speedup.toString()}`)
 	}
 
 	async isTargetEvent(event: Map<string, any>): Promise<boolean> {
 		const values = event.get('returnValues')
 		const speedup =
 			typeof process.env.DEV_PROPERTY_TRANSFER_SPEED_UP !== 'undefined'
+
 		let isPropertyAddressFrom = this._propertyAddress.isSet(values.from)
 
 		if (!isPropertyAddressFrom) {
