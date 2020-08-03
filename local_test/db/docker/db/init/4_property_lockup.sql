@@ -5,6 +5,7 @@ CREATE TABLE property_lockup(
     account_address TEXT NOT NULL,
     value NUMERIC NOT NULL,
 	locked_up_event_id TEXT NOT NULL,
+	block_number INT NOT NULL,
 	PRIMARY KEY(account_address, property_address)
 );
 
@@ -14,3 +15,4 @@ COMMENT ON COLUMN property_lockup.property_address IS 'property address';
 COMMENT ON COLUMN property_lockup.account_address IS 'account address';
 COMMENT ON COLUMN property_lockup.value IS 'lockuped value';
 COMMENT ON COLUMN property_lockup.locked_up_event_id IS 'event id of lockup_lockedup';
+COMMENT ON COLUMN property_lockup.block_number IS 'block number';

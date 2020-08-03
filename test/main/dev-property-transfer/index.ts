@@ -159,7 +159,7 @@ describe('timerTrigger', () => {
 			ProcessedBlockNumber,
 			'dev-property-transfer'
 		)
-		expect(record2.block_number).toBe(30000)
+		expect(record2.block_number).toBe(50000)
 	})
 	afterAll(async () => {
 		await con.quit()
