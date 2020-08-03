@@ -82,7 +82,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 			return
 		}
 
-		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
+		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 300)
 
 		const transaction = new Transaction(con)
 		try {
@@ -116,6 +116,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 					const tmp = new BigNumber(record.value).plus(new BigNumber(oldValue))
 					insertRecord.value = tmp.toString()
 					insertRecord.locked_up_event_id = lockedupEventId
+					insertRecord.block_number = record.block_number
 					await transaction.save(insertRecord)
 				} else {
 					if (typeof oldCurrentLockup === 'undefined') {

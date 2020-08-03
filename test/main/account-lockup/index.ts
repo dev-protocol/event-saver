@@ -158,9 +158,9 @@ describe('timerTrigger', () => {
 		await saveManyTestData(con.connection)
 		await timerTrigger(context, timer)
 		let count = await getCount(con.connection, AccountLockup)
-		expect(count).toBe(100)
+		expect(count).toBe(300)
 		count = await getCount(con.connection, DevPropertyTransfer)
-		expect(count).toBe(120)
+		expect(count).toBe(320)
 	}, 20000)
 	afterAll(async () => {
 		await con.quit()
@@ -300,7 +300,7 @@ async function saveManyTestData(con: Connection) {
 	await transaction.start()
 	const record = new DevPropertyTransfer()
 	const record2 = new LockupLockedup()
-	for (let i = 0; i < 120; i++) {
+	for (let i = 0; i < 320; i++) {
 		record.event_id = `dummy-event-id${i}`
 		record.block_number = 300000 + i
 		record.log_index = 20 + i
