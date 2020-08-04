@@ -13,6 +13,13 @@ CREATE INDEX ON property_lockup(
 	property_address
 );
 
+DROP VIEW IF EXISTS property_lockup_sum_values;
+
+CREATE VIEW property_lockup_sum_values AS
+  SELECT property_address, SUM(value) as sum_values
+    FROM property_lockup
+    GROUP BY property_address;
+
 COMMENT ON TABLE property_lockup IS 'current property lockuped information.';
 COMMENT ON COLUMN property_lockup.property_address IS 'property address';
 COMMENT ON COLUMN property_lockup.account_address IS 'account address';

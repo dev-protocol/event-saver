@@ -48,20 +48,6 @@ CREATE TABLE processed_block_number(
     PRIMARY KEY(key_name)
 );
 
-DROP VIEW IF EXISTS account_lockup_sum_values;
-
-CREATE VIEW account_lockup_sum_values AS
-  SELECT account_address, SUM(value) as sum_values
-    FROM account_lockup
-    GROUP BY account_address;
-
-DROP VIEW IF EXISTS property_lockup_sum_values;
-
-CREATE VIEW property_lockup_sum_values AS
-  SELECT property_address, SUM(value) as sum_values
-    FROM property_lockup
-    GROUP BY property_address;
-
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE SCHEMA IF NOT EXISTS hdb_catalog;
