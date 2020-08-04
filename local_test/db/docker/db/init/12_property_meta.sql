@@ -7,6 +7,7 @@ CREATE TABLE property_meta(
     block_number INT NOT NULL,
     name TEXT NOT NULL,
     symbol TEXT NOT NULL,
+	total_supply NUMERIC NOT NULL DEFAULT 10000000000000000000000000,
     PRIMARY KEY(author, property)
 );
 
@@ -22,3 +23,4 @@ COMMENT ON COLUMN property_meta.sender IS 'the address of the account where you 
 COMMENT ON COLUMN property_meta.block_number IS 'the block number from which the property was created';
 COMMENT ON COLUMN property_meta.name IS 'property name';
 COMMENT ON COLUMN property_meta.symbol IS 'property symbol';
+COMMENT ON COLUMN property_meta.total_supply IS 'property total supply';
