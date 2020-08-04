@@ -20,4 +20,7 @@ export class PropertyMeta extends BaseEntity {
 
 	@Column()
 	public symbol!: string
+
+	@Column()
+	public total_supply!: number
 }
