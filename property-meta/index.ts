@@ -86,6 +86,9 @@ class PropertyMetaCreator extends TimerBatchBase {
 				insertRecord.block_number = record.block_number
 				insertRecord.name = await propertyInstance.methods.name().call()
 				insertRecord.symbol = await propertyInstance.methods.symbol().call()
+				insertRecord.total_supply = await propertyInstance.methods
+					.totalSupply()
+					.call()
 				await transaction.save(insertRecord)
 				count++
 				if (count % 10 === 0) {

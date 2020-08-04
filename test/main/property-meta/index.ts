@@ -1,4 +1,5 @@
 import { Connection } from 'typeorm'
+import BigNumber from 'bignumber.js'
 import { mocked } from 'ts-jest/utils'
 import { getContextMock, getTimerMock } from '../../lib/mock'
 import {
@@ -44,11 +45,20 @@ const symbol = function () {
 	}
 }
 
+const totalSupply = function () {
+	return {
+		call: async function (): Promise<any> {
+			return 10000000000000000000000000
+		},
+	}
+}
+
 const mockResult = {
 	methods: {
 		author: author,
 		name: name,
 		symbol: symbol,
+		totalSupply: totalSupply,
 	},
 }
 
@@ -94,6 +104,11 @@ describe('timerTrigger', () => {
 		expect(record.block_number).toBe(30000)
 		expect(record.name).toBe('hoge-property')
 		expect(record.symbol).toBe('DPT')
+		expect(
+			new BigNumber(record.total_supply).eq(
+				new BigNumber(10000000000000000000000000)
+			)
+		).toBe(true)
 	})
 	it('Up to 100 records can be processed at a time.', async () => {
 		await saveManyPropertyFactoryCreateTestData(con.connection)
