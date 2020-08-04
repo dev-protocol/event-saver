@@ -25,12 +25,18 @@ jobs:
             node_modules
           key: ${{ runner.os }}-${ GITHUB_SHA }
 
-      - name: npm install and test
+      - name: npm install
         run: |
           npm ci
+
+      - name: create db
+        run: |
           cd local_test/db
           docker-compose up -d
           cd ../..
+
+      - name: test
+        run: |
           npm test
 
   deploy:

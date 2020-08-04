@@ -9,6 +9,17 @@ CREATE TABLE account_lockup(
 	PRIMARY KEY(account_address, property_address)
 );
 
+CREATE INDEX ON account_lockup(
+	account_address
+);
+
+DROP VIEW IF EXISTS account_lockup_sum_values;
+
+CREATE VIEW account_lockup_sum_values AS
+  SELECT account_address, SUM(value) as sum_values
+    FROM account_lockup
+    GROUP BY account_address;
+
 COMMENT ON TABLE account_lockup IS 'current user lockup information.';
 COMMENT ON COLUMN account_lockup.account_address IS 'account address';
 COMMENT ON COLUMN account_lockup.property_address IS 'property address';
