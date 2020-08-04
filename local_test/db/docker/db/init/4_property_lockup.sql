@@ -9,6 +9,9 @@ CREATE TABLE property_lockup(
 	PRIMARY KEY(account_address, property_address)
 );
 
+CREATE INDEX ON property_lockup(
+	property_address
+);
 
 COMMENT ON TABLE property_lockup IS 'current property lockuped information.';
 COMMENT ON COLUMN property_lockup.property_address IS 'property address';
