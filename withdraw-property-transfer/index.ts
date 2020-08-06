@@ -26,7 +26,7 @@ class PropertyTransferEventSaver extends EventSaver {
 	}
 
 	getEventName(): string {
-		return 'Transfer'
+		return 'PropertyTransfer'
 	}
 }
 
