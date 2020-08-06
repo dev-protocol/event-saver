@@ -89,7 +89,7 @@ describe('timerTrigger', () => {
 		count = await getCount(con.connection, ProcessedBlockNumber)
 		expect(count).toBe(0)
 	})
-	it('autherが全トークンを保持している場合、レコードは作成されない', async () => {
+	it('If the auther has all tokens, the record is not created.', async () => {
 		await saveTestData1(con.connection)
 		await createPropertyInstanceMock()
 		await timerTrigger(context, timer)
@@ -103,7 +103,7 @@ describe('timerTrigger', () => {
 		)
 		expect(blockNumber).toBe(300000)
 	})
-	it('propertyの残高が移動している場合、レコードが作成される', async () => {
+	it('If the balance of the property has been moved, a record is created.', async () => {
 		await saveTestData1(con.connection)
 		await createPropertyInstanceMock(7000000000000000000000000, [
 			{
@@ -147,7 +147,7 @@ describe('timerTrigger', () => {
 		)
 		expect(blockNumber).toBe(300000)
 	})
-	it('propertyの残高が移動したあと、残高が元に戻ったら、レコードが削除される', async () => {
+	it('After the property balance is moved, if the balance is restored, the record is deleted.', async () => {
 		await saveTestData1(con.connection)
 		await createPropertyInstanceMock(7000000000000000000000000, [
 			{
