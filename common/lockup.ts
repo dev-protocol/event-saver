@@ -14,6 +14,7 @@ import { LockupLockedup } from '../entities/lockup-lockedup'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
 import { AccountLockup } from '../entities/account-lockup'
 import { PropertyLockup } from '../entities/property-lockup'
+import { EventSaverWarning } from './error'
 
 export abstract class LockupInfoCreator extends TimerBatchBase {
 	async innerExecute(): Promise<void> {
@@ -52,7 +53,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 		}
 
 		if (findRecords.length === 0) {
-			throw new Error('not found lockup_lockuped record.')
+			throw new EventSaverWarning('not found lockup_lockuped record.')
 		}
 
 		throw new Error('get many lockup_lockuped record.')
