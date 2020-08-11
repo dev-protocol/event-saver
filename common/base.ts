@@ -1,5 +1,6 @@
 import { Context } from '@azure/functions'
 import { EventSaverLogging } from './notifications'
+import { EventSaverWarning } from './error'
 
 export abstract class TimerBatchBase {
 	private readonly _context: Context
@@ -22,9 +23,13 @@ export abstract class TimerBatchBase {
 
 			await this.innerExecute()
 		} catch (err) {
-			this.logging.errorlog(err.stack)
-			await this.logging.error(err.message)
-			throw err
+			if (err instanceof EventSaverWarning) {
+				await this.logging.warning(err.message)
+			} else {
+				this.logging.errorlog(err.stack)
+				await this.logging.error(err.message)
+				throw err
+			}
 		}
 
 		await this.logging.finish()
