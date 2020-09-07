@@ -1,7 +1,7 @@
 version: '3'
 services:
   hasura:
-    image: hasura/graphql-engine:v1.2.2
+    image: hasura/graphql-engine:v1.3.2
     container_name: devprtcl-event-hasura-container
     ports:
       - '8080:8080'
