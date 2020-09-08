@@ -5,6 +5,8 @@ import {
 	getLegacyGroupContractInfo,
 } from '../db/contract-info'
 
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 export async function getApprovalBlockNumber(web3: any): Promise<number> {
 	const currentBlockNumber = await web3.eth.getBlockNumber()
 	return currentBlockNumber - Number(process.env.APPROVAL!)

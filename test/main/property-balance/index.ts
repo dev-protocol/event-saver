@@ -13,6 +13,7 @@ import { DbConnection, Transaction } from '../../../common/db/common'
 import { getPropertyInstance } from '../../../common/block-chain/utils'
 import { PropertyBalance } from '../../../entities/property-balance'
 import { WithdrawPropertyTransfer } from '../../../entities/withdraw-property_transfer'
+import { PropertyMeta } from '../../../entities/property-meta'
 import { ProcessedBlockNumber } from '../../../entities/processed-block-number'
 import { getProcessedBlockNumber } from '../../../common/db/event'
 
@@ -212,6 +213,17 @@ async function saveTestData1(con: Connection) {
 	record.to_address = 'dummy-to-address1'
 	record.raw_data = '{}'
 	await transaction.save(record)
+
+	const record2 = new PropertyMeta()
+	record2.author = '0xauthor'
+	record2.property = 'dummy-property-address1'
+	record2.sender = '0xsender'
+	record2.block_number = 290000
+	record2.name = 'name'
+	record2.symbol = 'symbol'
+	record2.symbol = 'symbol'
+	await transaction.save(record2)
+
 	await transaction.commit()
 	await transaction.finish()
 }
