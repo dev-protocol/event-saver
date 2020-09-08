@@ -3,6 +3,7 @@ import { AzureFunction, Context } from '@azure/functions'
 import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
+import { ZERO_ADDRESS } from '../common/block-chain/utils'
 import { DbConnection, Transaction } from '../common/db/common'
 import {
 	getProcessedBlockNumber,
@@ -12,6 +13,7 @@ import {
 import { getPropertyInstance } from '../common/block-chain/utils'
 import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
 import { PropertyBalance } from '../entities/property-balance'
+import { PropertyMeta } from '../entities/property-meta'
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
 
@@ -46,6 +48,10 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		for (let event of events) {
 			const eventMap = new Map(Object.entries(event))
 			const values = eventMap.get('returnValues')
+			if (values.from === ZERO_ADDRESS) {
+				continue
+			}
+
 			const fromBalance = balance.get(values.from)
 			const toBalance =
 				typeof balance.get(values.to) === 'undefined'
@@ -91,6 +97,17 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 	}
 
+	private async getPropertyCreatedBlockNumber(
+		con: Connection,
+		propertyAddress: string
+	): Promise<number> {
+		const repository = con.getRepository(PropertyMeta)
+		const record = await repository.findOneOrFail({
+			property: propertyAddress,
+		})
+		return record.block_number
+	}
+
 	private async createPropertyMetaRecord(con: Connection): Promise<void> {
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		const records = await getEventRecord(
@@ -130,7 +147,14 @@ class PropertyBalanceCreator extends TimerBatchBase {
 					continue
 				}
 
-				const events = await propertyInstance.getPastEvents('Transfer')
+				const createdBlockNumber = await this.getPropertyCreatedBlockNumber(
+					con,
+					record.property_address
+				)
+				const events = await propertyInstance.getPastEvents('Transfer', {
+					fromBlock: createdBlockNumber - 1,
+					toBlock: record.block_number + 1,
+				})
 				const propertyBalanceRecords = await this.createRecord(
 					record.property_address,
 					events,
