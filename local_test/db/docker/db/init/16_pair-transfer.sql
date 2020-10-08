@@ -7,7 +7,7 @@ CREATE TABLE pair_transfer(
     transaction_index INT NOT NULL,
     from_address TEXT NOT NULL,
     to_address TEXT NOT NULL,
-	token_value NUMERIC NOT NULL,
+    token_value NUMERIC NOT NULL,
     raw_data TEXT NOT NULL,
     PRIMARY KEY(event_id)
 );

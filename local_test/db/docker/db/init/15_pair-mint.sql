@@ -7,7 +7,7 @@ CREATE TABLE pair_mint(
     transaction_index INT NOT NULL,
     sender TEXT NOT NULL,
     amount0 NUMERIC NOT NULL,
-	amount1 NUMERIC NOT NULL,
+    amount1 NUMERIC NOT NULL,
     raw_data TEXT NOT NULL,
     PRIMARY KEY(event_id)
 );
