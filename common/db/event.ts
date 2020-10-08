@@ -11,7 +11,7 @@ export class EventTableAccessor<Entity> {
 		this._entityClass = entityClass
 	}
 
-	public async getMaxBlockNumber<Entity>(): Promise<number> {
+	public async getMaxBlockNumber(): Promise<number> {
 		const number = await getMaxBlockNumber(this._connection, this._entityClass)
 		return number
 	}
