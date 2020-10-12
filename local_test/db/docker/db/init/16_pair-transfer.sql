@@ -12,7 +12,7 @@ CREATE TABLE pair_transfer(
     PRIMARY KEY(event_id)
 );
 
-CREATE INDEX ON pair_mint(
+CREATE INDEX ON pair_transfer(
 	block_number
 );
 
