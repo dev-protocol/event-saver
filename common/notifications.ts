@@ -93,22 +93,10 @@ export class EventSaverLogging {
 
 	public async start(): Promise<void> {
 		this._logger.info(this._funcname + ' started')
-		await this._discord.sendInfo(
-			'EventSaver',
-			this._funcname,
-			'message',
-			'start'
-		)
 	}
 
 	public async finish(): Promise<void> {
 		this._logger.info(this._funcname + ' finished')
-		await this._discord.sendInfo(
-			'EventSaver',
-			this._funcname,
-			'message',
-			'finish'
-		)
 	}
 
 	public async warning(message: string): Promise<void> {
