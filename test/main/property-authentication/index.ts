@@ -9,14 +9,13 @@ import {
 import { getDbConnection } from '../../lib/db'
 
 import timerTrigger from '../../../property-authentication/index'
-import { DbConnection } from '../../../common/db/common'
+import { Transaction, DbConnection } from '../../../common/db/common'
 import {
 	getPropertyByMetrics,
 	getAuthenticationIdByMetrics,
 } from '../../../common/block-chain/utils'
 import { MetricsFactoryCreate } from '../../../entities/metrics-factory-create'
 import { PropertyAuthentication } from '../../../entities/property-authentication'
-import { Transaction } from '../../../common/db/common'
 
 const context = getContextMock()
 
