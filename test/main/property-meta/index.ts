@@ -10,11 +10,10 @@ import {
 import { getDbConnection } from '../../lib/db'
 
 import timerTrigger from '../../../property-meta/index'
-import { DbConnection } from '../../../common/db/common'
+import { Transaction, DbConnection } from '../../../common/db/common'
 import { getPropertyInstance } from '../../../common/block-chain/utils'
 import { PropertyMeta } from '../../../entities/property-meta'
 import { PropertyFactoryCreate } from '../../../entities/property-factory-create'
-import { Transaction } from '../../../common/db/common'
 
 const context = getContextMock()
 

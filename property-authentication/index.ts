@@ -25,7 +25,6 @@ class PropertyAuthenticationCreator extends TimerBatchBase {
 
 		try {
 			await this.createPropertyAuthenticationRecord(db.connection)
-			// eslint-disable-next-line no-useless-catch
 		} catch (e) {
 			throw e
 		} finally {

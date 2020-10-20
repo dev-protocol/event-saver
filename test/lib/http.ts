@@ -1,9 +1,7 @@
 import { HttpRequest } from '@azure/functions'
 
 export function getHttpRequestMock(
-	headersArg: {
-		[key: string]: string
-	},
+	headersArg: Record<string, string>,
 	bodyArg: any,
 	params = {}
 ): HttpRequest {

@@ -9,12 +9,11 @@ import {
 import { getDbConnection } from '../../lib/db'
 
 import timerTrigger from '../../../property-authentication-deleted/index'
-import { DbConnection } from '../../../common/db/common'
+import { Transaction, DbConnection } from '../../../common/db/common'
 import { getPropertyByMetrics } from '../../../common/block-chain/utils'
 import { PropertyAuthentication } from '../../../entities/property-authentication'
 import { PropertyAuthenticationDeleted } from '../../../entities/property-authentication-deleted'
 import { MetricsFactoryDestroy } from '../../../entities/metrics-factory-destroy'
-import { Transaction } from '../../../common/db/common'
 
 const context = getContextMock()
 

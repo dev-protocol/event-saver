@@ -3,14 +3,13 @@ import { AzureFunction, Context } from '@azure/functions'
 import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
-import { ZERO_ADDRESS } from '../common/block-chain/utils'
+import { getPropertyInstance, ZERO_ADDRESS } from '../common/block-chain/utils'
 import { DbConnection, Transaction } from '../common/db/common'
 import {
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
 	getEventRecord,
 } from '../common/db/event'
-import { getPropertyInstance } from '../common/block-chain/utils'
 import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
 import { PropertyBalance } from '../entities/property-balance'
 import { PropertyMeta } from '../entities/property-meta'
@@ -28,7 +27,6 @@ class PropertyBalanceCreator extends TimerBatchBase {
 
 		try {
 			await this.createPropertyMetaRecord(db.connection)
-			// eslint-disable-next-line no-useless-catch
 		} catch (e) {
 			throw e
 		} finally {

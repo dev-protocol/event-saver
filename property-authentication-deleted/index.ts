@@ -21,7 +21,6 @@ class PropertyAuthenticationDeleter extends TimerBatchBase {
 
 		try {
 			await this.movePropertyAuthenticationRecord(db.connection)
-			// eslint-disable-next-line no-useless-catch
 		} catch (e) {
 			throw e
 		} finally {

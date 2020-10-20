@@ -31,7 +31,6 @@ export abstract class EventSaver extends TimerBatchBase {
 				await this._saveEvents(events)
 				this.logging.infolog('save ' + String(events.length) + ' data')
 			}
-			// eslint-disable-next-line no-useless-catch
 		} catch (err) {
 			throw err
 		} finally {
@@ -133,7 +132,6 @@ export abstract class ExtractedEventSaver extends TimerBatchBase {
 			const [events, endBlockNumber] = await this._getEvents()
 			const number = await this._saveEvents(events, endBlockNumber)
 			this.logging.infolog('save ' + String(number) + ' data')
-			// eslint-disable-next-line no-useless-catch
 		} catch (err) {
 			throw err
 		} finally {
