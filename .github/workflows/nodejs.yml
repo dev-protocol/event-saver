@@ -18,12 +18,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: cache deps
+      - name: cache
         uses: actions/cache@main
         with:
-          path: |
-            node_modules
-          key: ${{ runner.os }}-${ GITHUB_SHA }
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: npm install
         run: |
@@ -48,12 +49,13 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: restore cache deps
+      - name: cache
         uses: actions/cache@main
         with:
-          path: |
-            node_modules
-          key: ${{ runner.os }}-${ GITHUB_SHA }
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Build
         run: npm run build
