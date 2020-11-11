@@ -154,6 +154,31 @@ describe('timerTrigger', () => {
 		)
 		expect(blockNumber).toBe(300030)
 	})
+	it('If the lockup information exists, it is removed.', async () => {
+		await saveTestData1(con.connection)
+		await saveTestData6(con.connection)
+		await timerTrigger(context, timer)
+		let count = await getCount(con.connection, AccountLockup)
+		expect(count).toBe(1)
+		count = await getCount(con.connection, DevPropertyTransfer)
+		expect(count).toBe(2)
+		const repository = con.connection.getRepository(AccountLockup)
+		const record = await repository.findOne({
+			account_address: 'dummy-from-address1',
+			property_address: 'dummy-to-address1',
+		})
+
+		expect(record.account_address).toBe('dummy-from-address1')
+		expect(record.property_address).toBe('dummy-to-address1')
+		expect(record.value).toBe('20000')
+		expect(record.locked_up_event_id).toBe('dummy-lockup-event-id1')
+
+		const blockNumber = await getProcessedBlockNumber(
+			con.connection,
+			'account-lockup'
+		)
+		expect(blockNumber).toBe(300030)
+	})
 	it('Up to 100 records can be processed at a time.', async () => {
 		await saveManyTestData(con.connection)
 		await timerTrigger(context, timer)
@@ -208,6 +233,25 @@ async function saveTestData4(con: Connection) {
 	record.from_address = 'dummy-to-address1'
 	record.to_address = 'dummy-from-address1'
 	record.value = 30000
+	record.is_lockup = false
+	record.raw_data = '{}'
+	await transaction.save(record)
+
+	await transaction.commit()
+	await transaction.finish()
+}
+
+async function saveTestData6(con: Connection) {
+	const transaction = new Transaction(con)
+	await transaction.start()
+	const record = new DevPropertyTransfer()
+	record.event_id = 'dummy-event-id2'
+	record.block_number = 300030
+	record.log_index = 12
+	record.transaction_index = 3
+	record.from_address = 'dummy-to-address1'
+	record.to_address = 'dummy-from-address1'
+	record.value = 10000
 	record.is_lockup = false
 	record.raw_data = '{}'
 	await transaction.save(record)

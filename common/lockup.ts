@@ -109,11 +109,11 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 					const oldValue =
 						typeof oldCurrentLockup === 'undefined'
 							? 0
-							: Number(oldCurrentLockup.value)
+							: new BigNumber(oldCurrentLockup.value)
 					const insertRecord = this.getModel()
 					insertRecord.account_address = accountAddress
 					insertRecord.property_address = propertyAddress
-					const tmp = new BigNumber(record.value).plus(new BigNumber(oldValue))
+					const tmp = new BigNumber(record.value).plus(oldValue)
 					insertRecord.value = tmp.toString()
 					insertRecord.locked_up_event_id = lockedupEventId
 					insertRecord.block_number = record.block_number
@@ -123,11 +123,15 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 						continue
 					}
 
-					if (oldCurrentLockup.value !== record.value.toString()) {
-						throw new Error('the values of lockup and withdraw are different.')
+					if (oldCurrentLockup.value === record.value.toString()) {
+						await transaction.remove(oldCurrentLockup)
+					} else {
+						const tmp = new BigNumber(oldCurrentLockup.value).minus(
+							new BigNumber(record.value)
+						)
+						oldCurrentLockup.value = tmp.toString()
+						await transaction.save(oldCurrentLockup)
 					}
-
-					await transaction.remove(oldCurrentLockup)
 				}
 
 				count++
