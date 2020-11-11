@@ -154,7 +154,7 @@ describe('timerTrigger', () => {
 		)
 		expect(blockNumber).toBe(300030)
 	})
-	it('If the lockup information exists, it is removed.', async () => {
+	it('If the lockup information exists, it is lessen.', async () => {
 		await saveTestData1(con.connection)
 		await saveTestData6(con.connection)
 		await timerTrigger(context, timer)
@@ -186,7 +186,7 @@ describe('timerTrigger', () => {
 		expect(count).toBe(300)
 		count = await getCount(con.connection, DevPropertyTransfer)
 		expect(count).toBe(320)
-	}, 20000)
+	}, 30000)
 	afterAll(async () => {
 		await con.quit()
 	})
