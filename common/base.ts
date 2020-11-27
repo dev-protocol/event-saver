@@ -36,5 +36,5 @@ export abstract class TimerBatchBase {
 	}
 
 	abstract getBatchName(): string
-	abstract async innerExecute(): Promise<void>
+	abstract innerExecute(): Promise<void>
 }
