@@ -156,7 +156,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 	}
 
 	abstract getModel(): AccountLockup | PropertyLockup
-	abstract async getOldRecord(
+	abstract getOldRecord(
 		manager: EntityManager,
 		accountAddress: string,
 		propertyAddress: string
