@@ -94,7 +94,7 @@ describe('timerTrigger', () => {
 		const blockRecord = await blockNumberRepository.findOne({
 			key_name: 'property-authentication-deleted',
 		})
-		expect(blockRecord.block_number).toBe(30000)
+		expect(blockRecord.block_number).toBe(30001)
 	})
 	afterAll(async () => {
 		await con.quit()
@@ -109,7 +109,7 @@ async function saveMetricsFactoryDestroyDummyData(
 	const record = new MetricsFactoryDestroy()
 
 	record.event_id = 'dummy-event-id1'
-	record.block_number = 30000
+	record.block_number = 30001
 	record.log_index = 21
 	record.transaction_index = 36
 	record.from_address = 'dummy-user-address1'
