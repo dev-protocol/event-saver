@@ -14,6 +14,7 @@ import { getPropertyByMetrics } from '../../../common/block-chain/utils'
 import { PropertyAuthentication } from '../../../entities/property-authentication'
 import { PropertyAuthenticationDeleted } from '../../../entities/property-authentication-deleted'
 import { MetricsFactoryDestroy } from '../../../entities/metrics-factory-destroy'
+import { ProcessedBlockNumber } from '../../../entities/processed-block-number'
 
 const context = getContextMock()
 
@@ -35,6 +36,7 @@ describe('timerTrigger', () => {
 		await clearData(con.connection, PropertyAuthentication)
 		await clearData(con.connection, PropertyAuthenticationDeleted)
 		await clearData(con.connection, MetricsFactoryDestroy)
+		await clearData(con.connection, ProcessedBlockNumber)
 	})
 	it('If the record to be processed does not exist, no action is taken.', async () => {
 		await timerTrigger(context, timer)
@@ -43,6 +45,8 @@ describe('timerTrigger', () => {
 		count = await getCount(con.connection, PropertyAuthenticationDeleted)
 		expect(count).toBe(0)
 		count = await getCount(con.connection, MetricsFactoryDestroy)
+		expect(count).toBe(0)
+		count = await getCount(con.connection, ProcessedBlockNumber)
 		expect(count).toBe(0)
 	})
 	it('Even if the record to be processed exists, an error will occur if it conflicts with the authentication information.', async () => {
@@ -70,18 +74,27 @@ describe('timerTrigger', () => {
 		expect(count).toBe(1)
 		count = await getCount(con.connection, MetricsFactoryDestroy)
 		expect(count).toBe(1)
-		const repository = con.connection.getRepository(
+		count = await getCount(con.connection, ProcessedBlockNumber)
+		expect(count).toBe(1)
+		const deletedRepository = con.connection.getRepository(
 			PropertyAuthenticationDeleted
 		)
-		const record = await repository.findOne({
+		const deletedRecord = await deletedRepository.findOne({
 			property: 'dummy-property-address1',
 			metrics: 'dummy-metrics-address1',
 		})
-		expect(record.property).toBe('dummy-property-address1')
-		expect(record.metrics).toBe('dummy-metrics-address1')
-		expect(record.block_number).toBe(30000)
-		expect(record.market).toBe('dummy-market-address1')
-		expect(record.authentication_id).toBe('dummy-authentication-id1')
+		expect(deletedRecord.property).toBe('dummy-property-address1')
+		expect(deletedRecord.metrics).toBe('dummy-metrics-address1')
+		expect(deletedRecord.block_number).toBe(30000)
+		expect(deletedRecord.market).toBe('dummy-market-address1')
+		expect(deletedRecord.authentication_id).toBe('dummy-authentication-id1')
+		const blockNumberRepository = con.connection.getRepository(
+			ProcessedBlockNumber
+		)
+		const blockRecord = await blockNumberRepository.findOne({
+			key_name: 'property-authentication-deleted',
+		})
+		expect(blockRecord.block_number).toBe(30001)
 	})
 	afterAll(async () => {
 		await con.quit()
@@ -96,7 +109,7 @@ async function saveMetricsFactoryDestroyDummyData(
 	const record = new MetricsFactoryDestroy()
 
 	record.event_id = 'dummy-event-id1'
-	record.block_number = 30000
+	record.block_number = 30001
 	record.log_index = 21
 	record.transaction_index = 36
 	record.from_address = 'dummy-user-address1'
