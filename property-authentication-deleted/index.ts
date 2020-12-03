@@ -2,7 +2,11 @@ import { AzureFunction, Context } from '@azure/functions'
 import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getPropertyByMetrics } from '../common/block-chain/utils'
-import { getMaxBlockNumber, getEventRecord } from '../common/db/event'
+import {
+	setProcessedBlockNumber,
+	getProcessedBlockNumber,
+	getEventRecord,
+} from '../common/db/event'
 import { DbConnection, Transaction } from '../common/db/common'
 import { PropertyAuthentication } from '../entities/property-authentication'
 import { PropertyAuthenticationDeleted } from '../entities/property-authentication-deleted'
@@ -60,6 +64,15 @@ class PropertyAuthenticationDeleter extends TimerBatchBase {
 				await transaction.save(saveData)
 			}
 
+			const blockNumbers = destroyRecords.map(
+				(destroyRecord) => destroyRecord.block_number
+			)
+			const maxBlockNumber = blockNumbers.reduce((a, b) => Math.max(a, b))
+			await setProcessedBlockNumber(
+				transaction,
+				this.getBatchName(),
+				maxBlockNumber
+			)
 			await transaction.commit()
 		} catch (e) {
 			await transaction.rollback()
@@ -126,10 +139,7 @@ class PropertyAuthenticationDeleter extends TimerBatchBase {
 	}
 
 	private async getEvents(con: Connection): Promise<MetricsFactoryDestroy[]> {
-		const blockNumber = await getMaxBlockNumber(
-			con,
-			PropertyAuthenticationDeleted
-		)
+		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		this.logging.infolog(`processed block number:${blockNumber}`)
 		const records = await getEventRecord(
 			con,
