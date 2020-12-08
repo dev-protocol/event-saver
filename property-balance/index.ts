@@ -13,6 +13,7 @@ import {
 import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
 import { PropertyBalance } from '../entities/property-balance'
 import { PropertyMeta } from '../entities/property-meta'
+import { EventData } from 'web3-eth-contract/types'
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
 
@@ -36,30 +37,10 @@ class PropertyBalanceCreator extends TimerBatchBase {
 
 	private async createRecord(
 		propertyAddress: string,
-		events: Array<Map<string, any>>,
-		author: string,
-		totalSupply: number
+		events: EventData[],
+		author: string
 	): Promise<PropertyBalance[]> {
-		const balance = new Map<string, number>()
-		balance.set(author, totalSupply)
-		const blockNumber = new Map<string, number>()
-		for (let event of events) {
-			const eventMap = new Map(Object.entries(event))
-			const values = eventMap.get('returnValues')
-			if (values.from === ZERO_ADDRESS) {
-				continue
-			}
-
-			const fromBalance = balance.get(values.from)
-			const toBalance =
-				typeof balance.get(values.to) === 'undefined'
-					? 0
-					: balance.get(values.to)
-			balance.set(values.from, fromBalance - Number(values.value))
-			balance.set(values.to, toBalance + Number(values.value))
-			blockNumber.set(values.from, eventMap.get('blockNumber'))
-			blockNumber.set(values.to, eventMap.get('blockNumber'))
-		}
+		const [balance, blockNumber] = new EventAnalyzer(events).execute()
 
 		const result = []
 		balance.forEach(function (balance, account) {
@@ -156,8 +137,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 				const propertyBalanceRecords = await this.createRecord(
 					record.property_address,
 					events,
-					author,
-					totalSupply
+					author
 				)
 				await this.deleteRecord(transaction, record.property_address)
 				await this.insertRecord(transaction, propertyBalanceRecords)
@@ -176,6 +156,58 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		} finally {
 			await transaction.finish()
 		}
+	}
+}
+
+class EventAnalyzer {
+	private readonly events: EventData[]
+	constructor(_events: EventData[]) {
+		this.events = _events
+	}
+
+	public execute(): [Map<string, number>, Map<string, number>] {
+		const balanceinfo = new Map<string, number>()
+		const blockNumber = new Map<string, number>()
+		const [mintInfo, transferInfo] = this.splitMintEvent()
+		for (let mint of mintInfo) {
+			balanceinfo.set(mint.returnValues.to, mint.returnValues.value)
+			blockNumber.set(mint.returnValues.to, mint.blockNumber)
+		}
+
+		for (let transfer of transferInfo) {
+			const fromBalance = balanceinfo.get(transfer.returnValues.from)
+			const toBalance =
+				typeof balanceinfo.get(transfer.returnValues.to) === 'undefined'
+					? 0
+					: balanceinfo.get(transfer.returnValues.to)
+			balanceinfo.set(
+				transfer.returnValues.from,
+				fromBalance - Number(transfer.returnValues.value)
+			)
+			balanceinfo.set(
+				transfer.returnValues.to,
+				toBalance + Number(transfer.returnValues.value)
+			)
+			blockNumber.set(transfer.returnValues.from, transfer.blockNumber)
+			blockNumber.set(transfer.returnValues.to, transfer.blockNumber)
+		}
+
+		return [balanceinfo, blockNumber]
+	}
+
+	private splitMintEvent(): [EventData[], EventData[]] {
+		const mint = []
+		const transfer = []
+		for (let event of this.events) {
+			const values = event.returnValues
+			if (values.from === ZERO_ADDRESS) {
+				mint.push(event)
+			} else {
+				transfer.push(event)
+			}
+		}
+
+		return [mint, transfer]
 	}
 }
 
