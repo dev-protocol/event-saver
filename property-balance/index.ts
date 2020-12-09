@@ -35,58 +35,6 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 	}
 
-	private async createRecord(
-		propertyAddress: string,
-		events: EventData[],
-		author: string
-	): Promise<PropertyBalance[]> {
-		const [balance, blockNumber] = new EventAnalyzer(events).execute()
-
-		const result = []
-		balance.forEach(function (balance, account) {
-			const record = new PropertyBalance()
-			record.property_address = propertyAddress
-			record.account_address = account
-			record.balance = balance.toString()
-			record.is_author = account === author
-			record.block_number = blockNumber.get(account)
-			result.push(record)
-		})
-		return result
-	}
-
-	private async deleteRecord(
-		transaction: Transaction,
-		propertyAddresson: string
-	): Promise<void> {
-		const records = await transaction.manager.find(PropertyBalance, {
-			property_address: propertyAddresson,
-		})
-		for (let record of records) {
-			await transaction.remove(record)
-		}
-	}
-
-	private async insertRecord(
-		transaction: Transaction,
-		propertyBalanceRecords: PropertyBalance[]
-	): Promise<void> {
-		for (let record of propertyBalanceRecords) {
-			await transaction.save(record)
-		}
-	}
-
-	private async getPropertyCreatedBlockNumber(
-		con: Connection,
-		propertyAddress: string
-	): Promise<number> {
-		const repository = con.getRepository(PropertyMeta)
-		const record = await repository.findOneOrFail({
-			property: propertyAddress,
-		})
-		return record.block_number
-	}
-
 	private async createPropertyMetaRecord(con: Connection): Promise<void> {
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		const records = await getEventRecord(
@@ -105,6 +53,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
 		)
 		const transaction = new Transaction(con)
+		const propertyBalanceAccessor = new PropertyBalanceAccessor(transaction)
 		try {
 			await transaction.start()
 			this.logging.infolog(`record count：${targetRecords.length}`)
@@ -122,25 +71,23 @@ class PropertyBalanceCreator extends TimerBatchBase {
 					.call()
 				const totalSupply = await propertyInstance.methods.totalSupply().call()
 				if (Number(totalSupply) === Number(authorBalance)) {
-					await this.deleteRecord(transaction, record.property_address)
+					await propertyBalanceAccessor.deleteRecord(record.property_address)
 					continue
 				}
 
-				const createdBlockNumber = await this.getPropertyCreatedBlockNumber(
-					con,
+				const propertyMetaAccessor = new PropertyMetaAccessor(con)
+				const createdBlockNumber = await propertyMetaAccessor.getPropertyCreatedBlockNumber(
 					record.property_address
 				)
 				const events = await propertyInstance.getPastEvents('Transfer', {
 					fromBlock: createdBlockNumber - 1,
 					toBlock: record.block_number + 1,
 				})
-				const propertyBalanceRecords = await this.createRecord(
-					record.property_address,
-					events,
-					author
-				)
-				await this.deleteRecord(transaction, record.property_address)
-				await this.insertRecord(transaction, propertyBalanceRecords)
+				const propertyBalanceRecords = new PropertyBalanceObjectCreator(
+					new EventAnalyzer(events)
+				).execute(record.property_address, author)
+				await propertyBalanceAccessor.deleteRecord(record.property_address)
+				await propertyBalanceAccessor.insertRecord(propertyBalanceRecords)
 			}
 
 			await setProcessedBlockNumber(
@@ -156,6 +103,70 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		} finally {
 			await transaction.finish()
 		}
+	}
+}
+
+class PropertyMetaAccessor {
+	private readonly con: Connection
+	constructor(_con: Connection) {
+		this.con = _con
+	}
+
+	public async getPropertyCreatedBlockNumber(
+		propertyAddress: string
+	): Promise<number> {
+		const repository = this.con.getRepository(PropertyMeta)
+		const record = await repository.findOneOrFail({
+			property: propertyAddress,
+		})
+		return record.block_number
+	}
+}
+
+class PropertyBalanceAccessor {
+	private readonly transaction: Transaction
+	constructor(_transaction: Transaction) {
+		this.transaction = _transaction
+	}
+
+	public async deleteRecord(propertyAddress: string) {
+		const records = await this.transaction.manager.find(PropertyBalance, {
+			property_address: propertyAddress,
+		})
+		for (let record of records) {
+			await this.transaction.remove(record)
+		}
+	}
+
+	public async insertRecord(
+		propertyBalanceRecords: PropertyBalance[]
+	): Promise<void> {
+		for (let record of propertyBalanceRecords) {
+			await this.transaction.save(record)
+		}
+	}
+}
+
+class PropertyBalanceObjectCreator {
+	private readonly analyzer: EventAnalyzer
+	constructor(_analyzer: EventAnalyzer) {
+		this.analyzer = _analyzer
+	}
+
+	public execute(propertyAddress: string, author: string) {
+		const [balance, blockNumber] = this.analyzer.execute()
+
+		const result = []
+		balance.forEach(function (balance, account) {
+			const record = new PropertyBalance()
+			record.property_address = propertyAddress
+			record.account_address = account
+			record.balance = balance.toString()
+			record.is_author = account === author
+			record.block_number = blockNumber.get(account)
+			result.push(record)
+		})
+		return result
 	}
 }
 
