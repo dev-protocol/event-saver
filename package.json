@@ -53,7 +53,7 @@
 	},
 	"devDependencies": {
 		"@azure/functions": "1.2.2",
-		"@types/jest": "26.0.16",
+		"@types/jest": "26.0.18",
 		"@typescript-eslint/eslint-plugin": "4.9.1",
 		"@typescript-eslint/parser": "4.9.1",
 		"azure-function-context-mock": "0.0.7",
