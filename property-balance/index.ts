@@ -27,8 +27,20 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		await db.connect()
 
 		try {
-			await this.createByPropertyTransfer(db.connection)
-			await this.createByWithdrawPropertyTransfer(db.connection)
+			const transaction = new Transaction(db.connection)
+			try {
+				await transaction.start()
+				this.logging.infolog('property transfer')
+				await this.createByPropertyTransfer(db.connection, transaction)
+				this.logging.infolog('withdraw property transfer')
+				await this.createByWithdrawPropertyTransfer(db.connection, transaction)
+				await transaction.commit()
+			} catch (e) {
+				await transaction.rollback()
+				throw e
+			} finally {
+				await transaction.finish()
+			}
 		} catch (e) {
 			throw e
 		} finally {
@@ -36,7 +48,10 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 	}
 
-	private async createByPropertyTransfer(con: Connection): Promise<void> {
+	private async createByPropertyTransfer(
+		con: Connection,
+		transaction: Transaction
+	): Promise<void> {
 		const key = this.getBatchName() + '-by-transfer'
 		const blockNumber = await getProcessedBlockNumber(con, key)
 		if (blockNumber === 0) {
@@ -54,32 +69,22 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 
 		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
-		const transaction = new Transaction(con)
-		try {
-			await transaction.start()
-			this.logging.infolog(`record count：${targetRecords.length}`)
-			for (let record of targetRecords) {
-				await this.createPropertyBalance(
-					con,
-					record.property,
-					record.block_number,
-					transaction
-				)
-			}
-
-			await setProcessedBlockNumber(
-				transaction,
-				this.getBatchName(),
-				this.getMaxBlockNumber(targetRecords)
+		this.logging.infolog(`record count：${targetRecords.length}`)
+		for (let record of targetRecords) {
+			await this.createPropertyBalance(
+				con,
+				record.property,
+				record.block_number,
+				transaction
 			)
-			await transaction.commit()
-			this.logging.infolog(`all records were inserted：${targetRecords.length}`)
-		} catch (e) {
-			await transaction.rollback()
-			throw e
-		} finally {
-			await transaction.finish()
 		}
+
+		await setProcessedBlockNumber(
+			transaction,
+			this.getBatchName(),
+			this.getMaxBlockNumber(targetRecords)
+		)
+		this.logging.infolog(`all records were inserted：${targetRecords.length}`)
 	}
 
 	private getMaxBlockNumber(records: any[]): number {
@@ -90,7 +95,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		return maxBlockNumber
 	}
 
-	private async createPropertyBalance<Entity>(
+	private async createPropertyBalance(
 		con: Connection,
 		propertyAddress: string,
 		endBlockNumber: number,
@@ -118,7 +123,8 @@ class PropertyBalanceCreator extends TimerBatchBase {
 	}
 
 	private async createByWithdrawPropertyTransfer(
-		con: Connection
+		con: Connection,
+		transaction: Transaction
 	): Promise<void> {
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		const records = await getEventRecord(
@@ -133,32 +139,22 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 
 		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
-		const transaction = new Transaction(con)
-		try {
-			await transaction.start()
-			this.logging.infolog(`record count：${targetRecords.length}`)
-			for (let record of targetRecords) {
-				await this.createPropertyBalance(
-					con,
-					record.property_address,
-					record.block_number,
-					transaction
-				)
-			}
-
-			await setProcessedBlockNumber(
-				transaction,
-				this.getBatchName(),
-				this.getMaxBlockNumber(targetRecords)
+		this.logging.infolog(`record count：${targetRecords.length}`)
+		for (let record of targetRecords) {
+			await this.createPropertyBalance(
+				con,
+				record.property_address,
+				record.block_number,
+				transaction
 			)
-			await transaction.commit()
-			this.logging.infolog(`all records were inserted：${targetRecords.length}`)
-		} catch (e) {
-			await transaction.rollback()
-			throw e
-		} finally {
-			await transaction.finish()
 		}
+
+		await setProcessedBlockNumber(
+			transaction,
+			this.getBatchName(),
+			this.getMaxBlockNumber(targetRecords)
+		)
+		this.logging.infolog(`all records were inserted：${targetRecords.length}`)
 	}
 }
 
