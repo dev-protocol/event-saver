@@ -6,7 +6,7 @@ import {
 	setProcessedBlockNumber,
 	getProcessedBlockNumber,
 	getEventRecord,
-} from '../common/db/event'
+} from '../common/db/dao'
 import { DbConnection, Transaction } from '../common/db/common'
 import { PropertyAuthentication } from '../entities/property-authentication'
 import { PropertyAuthenticationDeleted } from '../entities/property-authentication-deleted'

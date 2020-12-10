@@ -6,7 +6,7 @@ import {
 	getEventRecord,
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
-} from '../../../../common/db/event'
+} from '../../../../common/db/dao'
 import { LockupLockedup } from '../../../../entities/lockup-lockedup'
 import { getDbConnection } from './../../../lib/db'
 import { saveLockupLockupedTestdata, clearData } from './../../../lib/test-data'

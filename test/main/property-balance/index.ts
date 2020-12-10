@@ -15,7 +15,7 @@ import { PropertyBalance } from '../../../entities/property-balance'
 import { WithdrawPropertyTransfer } from '../../../entities/withdraw-property_transfer'
 import { PropertyMeta } from '../../../entities/property-meta'
 import { ProcessedBlockNumber } from '../../../entities/processed-block-number'
-import { getProcessedBlockNumber } from '../../../common/db/event'
+import { getProcessedBlockNumber } from '../../../common/db/dao'
 
 const context = getContextMock()
 

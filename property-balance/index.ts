@@ -3,17 +3,17 @@ import { AzureFunction, Context } from '@azure/functions'
 import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
-import { getPropertyInstance, ZERO_ADDRESS } from '../common/block-chain/utils'
 import { DbConnection, Transaction } from '../common/db/common'
 import {
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
 	getEventRecord,
-} from '../common/db/event'
+	getRecordByBlockNumber,
+	PropertyBalanceAccessor,
+} from '../common/db/dao'
+import { PropertyData } from '../common/property'
 import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
-import { PropertyBalance } from '../entities/property-balance'
 import { PropertyMeta } from '../entities/property-meta'
-import { EventData } from 'web3-eth-contract/types'
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
 
@@ -27,7 +27,8 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		await db.connect()
 
 		try {
-			await this.createPropertyMetaRecord(db.connection)
+			await this.createByPropertyTransfer(db.connection)
+			await this.createByWithdrawPropertyTransfer(db.connection)
 		} catch (e) {
 			throw e
 		} finally {
@@ -35,11 +36,16 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 	}
 
-	private async createPropertyMetaRecord(con: Connection): Promise<void> {
-		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
-		const records = await getEventRecord(
+	private async createByPropertyTransfer(con: Connection): Promise<void> {
+		const key = this.getBatchName() + '-by-transfer'
+		const blockNumber = await getProcessedBlockNumber(con, key)
+		if (blockNumber === 0) {
+			throw new Error(`not set ${key} at processed_block_number`)
+		}
+
+		const records = await getRecordByBlockNumber(
 			con,
-			WithdrawPropertyTransfer,
+			PropertyMeta,
 			blockNumber + 1
 		)
 		if (records.length === 0) {
@@ -48,52 +54,23 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 
 		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
-
-		const web3 = new Web3(
-			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
-		)
 		const transaction = new Transaction(con)
-		const propertyBalanceAccessor = new PropertyBalanceAccessor(transaction)
 		try {
 			await transaction.start()
 			this.logging.infolog(`record count：${targetRecords.length}`)
-			let maxBlockNumber = 0
 			for (let record of targetRecords) {
-				const propertyInstance = await getPropertyInstance(
+				await this.createPropertyBalance(
 					con,
-					web3,
-					record.property_address
+					record.property,
+					record.block_number,
+					transaction
 				)
-				maxBlockNumber = Math.max(maxBlockNumber, record.block_number)
-				const author = await propertyInstance.methods.author().call()
-				const authorBalance = await propertyInstance.methods
-					.balanceOf(author)
-					.call()
-				const totalSupply = await propertyInstance.methods.totalSupply().call()
-				if (Number(totalSupply) === Number(authorBalance)) {
-					await propertyBalanceAccessor.deleteRecord(record.property_address)
-					continue
-				}
-
-				const propertyMetaAccessor = new PropertyMetaAccessor(con)
-				const createdBlockNumber = await propertyMetaAccessor.getPropertyCreatedBlockNumber(
-					record.property_address
-				)
-				const events = await propertyInstance.getPastEvents('Transfer', {
-					fromBlock: createdBlockNumber - 1,
-					toBlock: record.block_number + 1,
-				})
-				const propertyBalanceRecords = new PropertyBalanceObjectCreator(
-					new EventAnalyzer(events)
-				).execute(record.property_address, author)
-				await propertyBalanceAccessor.deleteRecord(record.property_address)
-				await propertyBalanceAccessor.insertRecord(propertyBalanceRecords)
 			}
 
 			await setProcessedBlockNumber(
 				transaction,
 				this.getBatchName(),
-				maxBlockNumber
+				this.getMaxBlockNumber(targetRecords)
 			)
 			await transaction.commit()
 			this.logging.infolog(`all records were inserted：${targetRecords.length}`)
@@ -104,121 +81,84 @@ class PropertyBalanceCreator extends TimerBatchBase {
 			await transaction.finish()
 		}
 	}
-}
 
-class PropertyMetaAccessor {
-	private readonly con: Connection
-	constructor(_con: Connection) {
-		this.con = _con
-	}
-
-	public async getPropertyCreatedBlockNumber(
-		propertyAddress: string
-	): Promise<number> {
-		const repository = this.con.getRepository(PropertyMeta)
-		const record = await repository.findOneOrFail({
-			property: propertyAddress,
+	private getMaxBlockNumber(records: any[]): number {
+		const tmp = records.map((record) => {
+			return record.block_number
 		})
-		return record.block_number
-	}
-}
-
-class PropertyBalanceAccessor {
-	private readonly transaction: Transaction
-	constructor(_transaction: Transaction) {
-		this.transaction = _transaction
+		const maxBlockNumber = Math.max(...tmp)
+		return maxBlockNumber
 	}
 
-	public async deleteRecord(propertyAddress: string) {
-		const records = await this.transaction.manager.find(PropertyBalance, {
-			property_address: propertyAddress,
-		})
-		for (let record of records) {
-			await this.transaction.remove(record)
-		}
-	}
-
-	public async insertRecord(
-		propertyBalanceRecords: PropertyBalance[]
+	private async createPropertyBalance<Entity>(
+		con: Connection,
+		propertyAddress: string,
+		endBlockNumber: number,
+		transaction: Transaction
 	): Promise<void> {
-		for (let record of propertyBalanceRecords) {
-			await this.transaction.save(record)
-		}
-	}
-}
+		const propertyBalanceAccessor = new PropertyBalanceAccessor(transaction)
+		const web3 = new Web3(
+			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
+		)
+		const property = new PropertyData(web3, con, propertyAddress)
+		await property.load()
 
-class PropertyBalanceObjectCreator {
-	private readonly analyzer: EventAnalyzer
-	constructor(_analyzer: EventAnalyzer) {
-		this.analyzer = _analyzer
-	}
-
-	public execute(propertyAddress: string, author: string) {
-		const [balance, blockNumber] = this.analyzer.execute()
-
-		const result = []
-		balance.forEach(function (balance, account) {
-			const record = new PropertyBalance()
-			record.property_address = propertyAddress
-			record.account_address = account
-			record.balance = balance.toString()
-			record.is_author = account === author
-			record.block_number = blockNumber.get(account)
-			result.push(record)
-		})
-		return result
-	}
-}
-
-class EventAnalyzer {
-	private readonly events: EventData[]
-	constructor(_events: EventData[]) {
-		this.events = _events
-	}
-
-	public execute(): [Map<string, number>, Map<string, number>] {
-		const balanceinfo = new Map<string, number>()
-		const blockNumber = new Map<string, number>()
-		const [mintInfo, transferInfo] = this.splitMintEvent()
-		for (let mint of mintInfo) {
-			balanceinfo.set(mint.returnValues.to, mint.returnValues.value)
-			blockNumber.set(mint.returnValues.to, mint.blockNumber)
+		const hasAllToken = await property.hasAllTokenByAuthor()
+		if (hasAllToken) {
+			await propertyBalanceAccessor.deleteRecord(propertyAddress)
+			return
 		}
 
-		for (let transfer of transferInfo) {
-			const fromBalance = balanceinfo.get(transfer.returnValues.from)
-			const toBalance =
-				typeof balanceinfo.get(transfer.returnValues.to) === 'undefined'
-					? 0
-					: balanceinfo.get(transfer.returnValues.to)
-			balanceinfo.set(
-				transfer.returnValues.from,
-				fromBalance - Number(transfer.returnValues.value)
-			)
-			balanceinfo.set(
-				transfer.returnValues.to,
-				toBalance + Number(transfer.returnValues.value)
-			)
-			blockNumber.set(transfer.returnValues.from, transfer.blockNumber)
-			blockNumber.set(transfer.returnValues.to, transfer.blockNumber)
-		}
-
-		return [balanceinfo, blockNumber]
+		const events = await property.getTransferEvent(endBlockNumber + 1)
+		await propertyBalanceAccessor.insertRecord(
+			events,
+			propertyAddress,
+			property.author
+		)
 	}
 
-	private splitMintEvent(): [EventData[], EventData[]] {
-		const mint = []
-		const transfer = []
-		for (let event of this.events) {
-			const values = event.returnValues
-			if (values.from === ZERO_ADDRESS) {
-				mint.push(event)
-			} else {
-				transfer.push(event)
+	private async createByWithdrawPropertyTransfer(
+		con: Connection
+	): Promise<void> {
+		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
+		const records = await getEventRecord(
+			con,
+			WithdrawPropertyTransfer,
+			blockNumber + 1
+		)
+
+		if (records.length === 0) {
+			this.logging.infolog('no target record')
+			return
+		}
+
+		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
+		const transaction = new Transaction(con)
+		try {
+			await transaction.start()
+			this.logging.infolog(`record count：${targetRecords.length}`)
+			for (let record of targetRecords) {
+				await this.createPropertyBalance(
+					con,
+					record.property_address,
+					record.block_number,
+					transaction
+				)
 			}
-		}
 
-		return [mint, transfer]
+			await setProcessedBlockNumber(
+				transaction,
+				this.getBatchName(),
+				this.getMaxBlockNumber(targetRecords)
+			)
+			await transaction.commit()
+			this.logging.infolog(`all records were inserted：${targetRecords.length}`)
+		} catch (e) {
+			await transaction.rollback()
+			throw e
+		} finally {
+			await transaction.finish()
+		}
 	}
 }
 

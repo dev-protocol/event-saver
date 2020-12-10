@@ -9,7 +9,7 @@ import {
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
 	getMinBlockNumber,
-} from '../common/db/event'
+} from './db/dao'
 import { LockupLockedup } from '../entities/lockup-lockedup'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
 import { AccountLockup } from '../entities/account-lockup'

@@ -4,7 +4,7 @@ import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
-import { getMaxBlockNumber, getEventRecord } from '../common/db/event'
+import { getMaxBlockNumber, getEventRecord } from '../common/db/dao'
 import {
 	getPropertyByMetrics,
 	getAuthenticationIdByMetrics,
