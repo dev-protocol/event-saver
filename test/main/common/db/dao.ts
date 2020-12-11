@@ -164,7 +164,7 @@ describe('getProcessedBlockNumber,setProcessedBlockNumber', () => {
 	})
 })
 
-// describe('PropertyBalanceAccessor', () => {
+// Describe('PropertyBalanceAccessor', () => {
 // 	let con: DbConnection
 // 	const [property1, property2. account1, account2] = generateTestAddress()
 // 	async function saveTestData1(con: Connection) {
@@ -175,7 +175,6 @@ describe('getProcessedBlockNumber,setProcessedBlockNumber', () => {
 // 		record.account_address = account1
 // 		record.balance = '100'
 // 		record.is_author = true
-
 
 // 		@PrimaryColumn()
 // 		public property_address!: string
@@ -191,7 +190,6 @@ describe('getProcessedBlockNumber,setProcessedBlockNumber', () => {
 
 // 		@Column()
 // 		public block_number!: number
-
 
 // 		record.event_id = 'dummy-event-id1'
 // 		record.block_number = 300000
