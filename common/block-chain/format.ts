@@ -8,7 +8,12 @@ export function formatTransferEvent(
 	const blockNumber = new Map<string, number>()
 	const [mintInfo, transferInfo] = splitMintEvent(events)
 	for (let mint of mintInfo) {
-		balanceinfo.set(mint.returnValues.to, mint.returnValues.value)
+		const tmp = balanceinfo.get(mint.returnValues.to)
+		const value = typeof tmp === 'undefined' ? 0 : tmp
+		balanceinfo.set(
+			mint.returnValues.to,
+			value + Number(mint.returnValues.value)
+		)
 		blockNumber.set(mint.returnValues.to, mint.blockNumber)
 	}
 
@@ -37,8 +42,7 @@ function splitMintEvent(events: EventData[]): [EventData[], EventData[]] {
 	const mint = []
 	const transfer = []
 	for (let event of events) {
-		const values = event.returnValues
-		if (values.from === ZERO_ADDRESS) {
+		if (event.returnValues.from === ZERO_ADDRESS) {
 			mint.push(event)
 		} else {
 			transfer.push(event)
