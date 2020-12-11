@@ -1,3 +1,4 @@
+import Web3 from 'web3'
 import { ObjectType, EntityManager, Connection } from 'typeorm'
 import { Transaction } from '../../common/db/common'
 import { LockupLockedup } from '../../entities/lockup-lockedup'
@@ -232,4 +233,15 @@ export async function saveLegacyGroupContractInfoTestdata(
 
 	await transaction.commit()
 	await transaction.finish()
+}
+
+export function generateTestAddress(): string[] {
+	const addresses = []
+	const web3 = new Web3()
+	for (let i = 0; i < 10; i++) {
+		const account = web3.eth.accounts.create()
+		addresses.push(account.address)
+	}
+
+	return addresses
 }

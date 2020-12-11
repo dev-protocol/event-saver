@@ -1,10 +1,10 @@
-import Web3 from 'web3'
 import { EventData } from 'web3-eth-contract/types'
 import * as lodashfrom from 'lodash'
+import { generateTestAddress } from '../../../lib/test-data'
 import { formatTransferEvent } from '../../../../common/block-chain/format'
 import { ZERO_ADDRESS } from '../../../../common/block-chain/utils'
 
-describe('splitMintEvent', () => {
+describe('formatTransferEvent', () => {
 	const [user1, user2, user3, user4] = generateTestAddress()
 	it('No error is raised when an empty array is passed.', async () => {
 		const generator = new EventDataGenerator()
@@ -64,17 +64,6 @@ describe('splitMintEvent', () => {
 		expect(blockNumber.get(user4)).toBe(165500)
 	})
 })
-
-function generateTestAddress(): string[] {
-	const addresses = []
-	const web3 = new Web3()
-	for (let i = 0; i < 10; i++) {
-		const account = web3.eth.accounts.create()
-		addresses.push(account.address)
-	}
-
-	return addresses
-}
 
 class EventDataGenerator {
 	static readonly TEMPLATE: EventData = {

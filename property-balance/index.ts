@@ -7,8 +7,7 @@ import { DbConnection, Transaction } from '../common/db/common'
 import {
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
-	getEventRecord,
-	getRecordByBlockNumber,
+	getEventRecordThenGreaterBlockNumber,
 	PropertyBalanceAccessor,
 } from '../common/db/dao'
 import { PropertyData } from '../common/property'
@@ -58,7 +57,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 			throw new Error(`not set ${key} at processed_block_number`)
 		}
 
-		const records = await getRecordByBlockNumber(
+		const records = await getEventRecordThenGreaterBlockNumber(
 			con,
 			PropertyMeta,
 			blockNumber + 1
@@ -127,7 +126,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		transaction: Transaction
 	): Promise<void> {
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
-		const records = await getEventRecord(
+		const records = await getEventRecordThenGreaterBlockNumber(
 			con,
 			WithdrawPropertyTransfer,
 			blockNumber + 1

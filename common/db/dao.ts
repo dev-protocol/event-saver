@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { ObjectType, Connection, EntityManager } from 'typeorm'
+import Web3 from 'web3'
 import { EventData } from 'web3-eth-contract/types'
 import { ProcessedBlockNumber } from '../../entities/processed-block-number'
 import { PropertyBalance } from '../../entities/property-balance'
@@ -86,7 +87,7 @@ export async function setProcessedBlockNumber(
 	await transaction.save(saveData)
 }
 
-export async function getEventRecord<Entity>(
+export async function getEventRecordThenGreaterBlockNumber<Entity>(
 	connection: Connection,
 	entityClass: ObjectType<Entity>,
 	blockNumber: number
@@ -101,15 +102,6 @@ export async function getEventRecord<Entity>(
 	return records
 }
 
-export async function getRecordByBlockNumber<Entity>(
-	connection: Connection,
-	entityClass: ObjectType<Entity>,
-	blockNumber: number
-): Promise<Entity[]> {
-	const records = await getEventRecord(connection, entityClass, blockNumber)
-	return records
-}
-
 export class PropertyBalanceAccessor {
 	private readonly transaction: Transaction
 	constructor(_transaction: Transaction) {
@@ -117,6 +109,11 @@ export class PropertyBalanceAccessor {
 	}
 
 	public async deleteRecord(propertyAddress: string) {
+		const web3 = new Web3()
+		if (!web3.utils.isAddress(propertyAddress)) {
+			throw new Error(`illegal address:${propertyAddress}`)
+		}
+
 		const records = await this.transaction.manager.find(PropertyBalance, {
 			property_address: propertyAddress,
 		})
@@ -130,6 +127,19 @@ export class PropertyBalanceAccessor {
 		propertyAddress: string,
 		author: string
 	): Promise<void> {
+		if (propertyTransferEventData.length === 0) {
+			throw new Error(`property balance record is 0: ${propertyAddress}`)
+		}
+
+		const web3 = new Web3()
+		if (!web3.utils.isAddress(propertyAddress)) {
+			throw new Error(`illegal address:${propertyAddress}`)
+		}
+
+		if (!web3.utils.isAddress(author)) {
+			throw new Error(`illegal address:${author}`)
+		}
+
 		await this.deleteRecord(propertyAddress)
 		const propertyBalanceRecords = formatTransferEventToPropertyBalance(
 			propertyTransferEventData,

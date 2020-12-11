@@ -4,7 +4,10 @@ import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
-import { getMaxBlockNumber, getEventRecord } from '../common/db/dao'
+import {
+	getMaxBlockNumber,
+	getEventRecordThenGreaterBlockNumber,
+} from '../common/db/dao'
 import {
 	getPropertyByMetrics,
 	getAuthenticationIdByMetrics,
@@ -49,7 +52,7 @@ class PropertyAuthenticationCreator extends TimerBatchBase {
 		con: Connection
 	): Promise<void> {
 		const blockNumber = await getMaxBlockNumber(con, PropertyAuthentication)
-		const records = await getEventRecord(
+		const records = await getEventRecordThenGreaterBlockNumber(
 			con,
 			MetricsFactoryCreate,
 			blockNumber + 1

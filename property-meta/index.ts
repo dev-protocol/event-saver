@@ -4,7 +4,10 @@ import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
-import { getMaxBlockNumber, getEventRecord } from '../common/db/dao'
+import {
+	getMaxBlockNumber,
+	getEventRecordThenGreaterBlockNumber,
+} from '../common/db/dao'
 import { getPropertyInstance } from '../common/block-chain/utils'
 import { PropertyMeta } from '../entities/property-meta'
 import { PropertyFactoryCreate } from '../entities/property-factory-create'
@@ -44,7 +47,7 @@ class PropertyMetaCreator extends TimerBatchBase {
 
 	private async createPropertyMetaRecord(con: Connection): Promise<void> {
 		const blockNumber = await getMaxBlockNumber(con, PropertyMeta)
-		const records = await getEventRecord(
+		const records = await getEventRecordThenGreaterBlockNumber(
 			con,
 			PropertyFactoryCreate,
 			blockNumber + 1

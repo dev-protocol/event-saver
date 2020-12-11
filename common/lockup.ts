@@ -5,7 +5,7 @@ import { TimerBatchBase } from '../common/base'
 import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
 import {
-	getEventRecord,
+	getEventRecordThenGreaterBlockNumber,
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
 	getMinBlockNumber,
@@ -72,7 +72,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 		const lockupMinBlockNumber = await getMinBlockNumber(con, LockupLockedup)
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		this.logging.infolog(`start block number：${blockNumber + 1}`)
-		const records = await getEventRecord(
+		const records = await getEventRecordThenGreaterBlockNumber(
 			con,
 			DevPropertyTransfer,
 			blockNumber + 1
