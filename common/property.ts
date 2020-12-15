@@ -1,6 +1,7 @@
 import { DbConnection } from './db/common'
 import { getContractInfo } from './db/contract-info'
 import { PropertyMeta } from '../entities/property-meta'
+import { Connection } from 'typeorm'
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
@@ -52,3 +53,50 @@ export class PropertyAddress {
 		return result
 	}
 }
+
+// export class PropertyData {
+// 	private readonly web3: any
+// 	private readonly con: Connection
+// 	private readonly propertyAddress: string
+// 	private propertyInstance: any
+// 	private record: PropertyMeta
+
+// 	constructor(_web3: any, _con: Connection, _propertyAddress: string) {
+// 		this.web3 = _web3
+// 		this.con = _con
+// 		this.propertyAddress = _propertyAddress
+// 	}
+
+// 	get author(): string {
+// 		return this.record.author
+// 	}
+
+// 	public async load(): Promise<void> {
+// 		this.propertyInstance = await getPropertyInstance(
+// 			this.con,
+// 			this.web3,
+// 			this.propertyAddress
+// 		)
+// 		const repository = this.con.getRepository(PropertyMeta)
+// 		this.record = await repository.findOneOrFail({
+// 			property: this.propertyAddress,
+// 		})
+// 	}
+
+// 	public async hasAllTokenByAuthor(): Promise<boolean> {
+// 		const authorBalance = await this.propertyInstance.methods
+// 			.balanceOf(this.record.author)
+// 			.call()
+// 		const totalSupply = this.record.total_supply
+// 		return Number(totalSupply) === Number(authorBalance)
+// 	}
+
+// 	public async getTransferEvent(endBlock: number): Promise<EventData[]> {
+// 		const startBlock = this.record.block_number
+// 		const events = await this.propertyInstance.getPastEvents('Transfer', {
+// 			fromBlock: startBlock - 1,
+// 			toBlock: endBlock,
+// 		})
+// 		return events
+// 	}
+// }
