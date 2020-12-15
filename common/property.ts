@@ -69,8 +69,10 @@ export class PropertyData {
 		this.propertyAddress = _propertyAddress
 	}
 
-	get author(): string {
-		return this.record.author
+	public async getAuthor(): Promise<string> {
+		const author = await this.propertyInstance.methods.author().call()
+
+		return author
 	}
 
 	public async load(): Promise<void> {
@@ -86,8 +88,9 @@ export class PropertyData {
 	}
 
 	public async hasAllTokenByAuthor(): Promise<boolean> {
+		const author = await this.getAuthor()
 		const authorBalance = await this.propertyInstance.methods
-			.balanceOf(this.record.author)
+			.balanceOf(author)
 			.call()
 		const totalSupply = this.record.total_supply
 		return Number(totalSupply) === Number(authorBalance)
