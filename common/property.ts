@@ -54,7 +54,7 @@ export class PropertyAddress {
 	}
 }
 
-// export class PropertyData {
+// Export class PropertyData {
 // 	private readonly web3: any
 // 	private readonly con: Connection
 // 	private readonly propertyAddress: string
