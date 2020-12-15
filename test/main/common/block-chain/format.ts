@@ -1,8 +1,5 @@
-import { EventData } from 'web3-eth-contract/types'
-import * as lodashfrom from 'lodash'
-import { generateTestAddress } from '../../../lib/test-data'
+import { generateTestAddress, EventDataGenerator } from '../../../lib/test-data'
 import { formatTransferEvent } from '../../../../common/block-chain/format'
-import { ZERO_ADDRESS } from '../../../../common/block-chain/utils'
 
 describe('formatTransferEvent', () => {
 	const [user1, user2, user3, user4] = generateTestAddress()
@@ -64,46 +61,3 @@ describe('formatTransferEvent', () => {
 		expect(blockNumber.get(user4)).toBe(165500)
 	})
 })
-
-class EventDataGenerator {
-	static readonly TEMPLATE: EventData = {
-		returnValues: {},
-		raw: {
-			data: '',
-			topics: [''],
-		},
-		event: '',
-		signature: '',
-		logIndex: 0,
-		transactionIndex: 0,
-		transactionHash: '',
-		blockHash: '',
-		blockNumber: 0,
-		address: '',
-	}
-
-	private readonly testData: EventData[] = []
-	public addMintTransfer(to: string, value: number, blockNumber: number) {
-		this.addTransfer(ZERO_ADDRESS, to, value, blockNumber)
-	}
-
-	public addTransfer(
-		from: string,
-		to: string,
-		value: number,
-		blockNumber: number
-	) {
-		const data = lodashfrom.cloneDeep(EventDataGenerator.TEMPLATE) as EventData
-		data.returnValues = {
-			from: from,
-			to: to,
-			value: value,
-		}
-		data.blockNumber = blockNumber
-		this.testData.push(data)
-	}
-
-	get data(): EventData[] {
-		return this.testData
-	}
-}
