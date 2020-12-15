@@ -301,7 +301,7 @@ describe('PropertyBalanceAccessor', () => {
 						expect(property1Record.block_number).toBe(122)
 						break
 					default:
-						throw new Error('illegal property address')
+						throw new Error('illegal account address')
 				}
 			})
 		})

@@ -12,7 +12,7 @@
 		"start:host": "func start",
 		"start": "npm-run-all --parallel start:host watch",
 		"test": "npm run build && jest --runInBand --testTimeout=50000",
-		"test2": "jest --runInBand --testTimeout=50000 test/main/common/db/dao.ts",
+		"test2": "jest --runInBand --testTimeout=50000 test/main/common/db/format.ts",
 		"lint": "npm run lint:eslint && npm run lint:format",
 		"lint:eslint": "eslint . --ext .ts --fix",
 		"lint:format": "prettier --write '**/*.{json,md,yml}'"
