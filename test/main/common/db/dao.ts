@@ -245,14 +245,6 @@ describe('PropertyBalanceAccessor', () => {
 			const recordCount = await getCount(con.connection, PropertyBalance)
 			expect(recordCount).toBe(4)
 		})
-		it('if you specify a strange address, an error will occur..', async () => {
-			const transaction = new Transaction(con.connection)
-			const accessor = new PropertyBalanceAccessor(transaction)
-			const result = await accessor
-				.deleteRecord('dummy')
-				.catch((err: Error) => err)
-			expect((result as Error).message).toBe('illegal address:dummy')
-		})
 	})
 	describe('insertRecord', () => {
 		it('event information is registered as a record..', async () => {
@@ -316,32 +308,6 @@ describe('PropertyBalanceAccessor', () => {
 			expect((result as Error).message).toBe(
 				`property balance record is 0: ${property1}`
 			)
-			await transaction.commit()
-			await transaction.finish()
-		})
-		it('an error occurs if you specify a strange property address.', async () => {
-			const dataGenerator = new EventDataGenerator()
-			dataGenerator.addMintTransfer(account1, 10000, 100)
-			const transaction = new Transaction(con.connection)
-			await transaction.start()
-			const accessor = new PropertyBalanceAccessor(transaction)
-			const result = await accessor
-				.insertRecord(dataGenerator.data, 'dummy', account1)
-				.catch((err: Error) => err)
-			expect((result as Error).message).toBe('illegal address:dummy')
-			await transaction.commit()
-			await transaction.finish()
-		})
-		it('an error occurs if you specify a strange author address.', async () => {
-			const dataGenerator = new EventDataGenerator()
-			dataGenerator.addMintTransfer(account1, 10000, 100)
-			const transaction = new Transaction(con.connection)
-			await transaction.start()
-			const accessor = new PropertyBalanceAccessor(transaction)
-			const result = await accessor
-				.insertRecord(dataGenerator.data, property1, 'dummy2')
-				.catch((err: Error) => err)
-			expect((result as Error).message).toBe('illegal address:dummy2')
 			await transaction.commit()
 			await transaction.finish()
 		})

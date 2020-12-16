@@ -53,10 +53,6 @@ class PropertyBalanceCreator extends TimerBatchBase {
 	): Promise<void> {
 		const key = this.getBatchName() + '-by-transfer'
 		const blockNumber = await getProcessedBlockNumber(con, key)
-		if (blockNumber === 0) {
-			throw new Error(`not set ${key} at processed_block_number`)
-		}
-
 		const records = await getEventRecordThenGreaterBlockNumber(
 			con,
 			PropertyMeta,
@@ -80,7 +76,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 
 		await setProcessedBlockNumber(
 			transaction,
-			this.getBatchName(),
+			key,
 			this.getMaxBlockNumber(targetRecords)
 		)
 		this.logging.infolog(`all records were inserted：${targetRecords.length}`)

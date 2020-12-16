@@ -7,6 +7,7 @@ import { LockupLockedup } from '../../entities/lockup-lockedup'
 import { ContractInfo } from '../../entities/contract-info'
 import { GroupContractInfo } from '../../entities/group-contract-info'
 import { LegacyGroupContractInfo } from '../../entities/legacy-group-contract-info'
+import { ProcessedBlockNumber } from '../../entities/processed-block-number'
 import { ZERO_ADDRESS } from '../../common/block-chain/utils'
 
 export async function saveLockupLockupedTestdata(
