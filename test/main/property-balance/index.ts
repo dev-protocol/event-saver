@@ -5,7 +5,7 @@ import {
 	saveContractInfoTestdata,
 	clearData,
 	getCount,
-	EventDataGenerator
+	EventDataGenerator,
 } from '../../lib/test-data'
 import { getDbConnection } from '../../lib/db'
 
