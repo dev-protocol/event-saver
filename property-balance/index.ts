@@ -114,11 +114,8 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		}
 
 		const events = await property.getTransferEvent(endBlockNumber + 1)
-		await propertyBalanceAccessor.insertRecord(
-			events,
-			propertyAddress,
-			property.author
-		)
+		const author = await property.getAuthor()
+		await propertyBalanceAccessor.insertRecord(events, propertyAddress, author)
 	}
 
 	private async createByWithdrawPropertyTransfer(

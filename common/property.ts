@@ -69,12 +69,6 @@ export class PropertyData {
 		this.propertyAddress = _propertyAddress
 	}
 
-	public async getAuthor(): Promise<string> {
-		const author = await this.propertyInstance.methods.author().call()
-
-		return author
-	}
-
 	public async load(): Promise<void> {
 		this.propertyInstance = await getPropertyInstance(
 			this.con,
@@ -85,6 +79,12 @@ export class PropertyData {
 		this.record = await repository.findOneOrFail({
 			property: this.propertyAddress,
 		})
+	}
+
+	public async getAuthor(): Promise<string> {
+		const author = await this.propertyInstance.methods.author().call()
+
+		return author
 	}
 
 	public async hasAllTokenByAuthor(): Promise<boolean> {
