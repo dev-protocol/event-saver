@@ -5,8 +5,8 @@ import { getPropertyByMetrics } from '../common/block-chain/utils'
 import {
 	setProcessedBlockNumber,
 	getProcessedBlockNumber,
-	getEventRecord,
-} from '../common/db/event'
+	getEventRecordThenGreaterBlockNumber,
+} from '../common/db/dao'
 import { DbConnection, Transaction } from '../common/db/common'
 import { PropertyAuthentication } from '../entities/property-authentication'
 import { PropertyAuthenticationDeleted } from '../entities/property-authentication-deleted'
@@ -141,7 +141,7 @@ class PropertyAuthenticationDeleter extends TimerBatchBase {
 	private async getEvents(con: Connection): Promise<MetricsFactoryDestroy[]> {
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		this.logging.infolog(`processed block number:${blockNumber}`)
-		const records = await getEventRecord(
+		const records = await getEventRecordThenGreaterBlockNumber(
 			con,
 			MetricsFactoryDestroy,
 			blockNumber + 1

@@ -6,7 +6,7 @@ import {
 	EventTableAccessor,
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
-} from './db/event'
+} from './db/dao'
 import { getContractInfo } from './db/contract-info'
 import { Event } from './block-chain/event'
 import { getApprovalBlockNumber } from './block-chain/utils'

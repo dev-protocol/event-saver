@@ -1,9 +1,14 @@
+import { EventData } from 'web3-eth-contract/types'
+import * as lodashfrom from 'lodash'
+import Web3 from 'web3'
 import { ObjectType, EntityManager, Connection } from 'typeorm'
 import { Transaction } from '../../common/db/common'
 import { LockupLockedup } from '../../entities/lockup-lockedup'
 import { ContractInfo } from '../../entities/contract-info'
 import { GroupContractInfo } from '../../entities/group-contract-info'
 import { LegacyGroupContractInfo } from '../../entities/legacy-group-contract-info'
+import { ProcessedBlockNumber } from '../../entities/processed-block-number'
+import { ZERO_ADDRESS } from '../../common/block-chain/utils'
 
 export async function saveLockupLockupedTestdata(
 	con: Connection,
@@ -232,4 +237,58 @@ export async function saveLegacyGroupContractInfoTestdata(
 
 	await transaction.commit()
 	await transaction.finish()
+}
+
+export function generateTestAddress(): string[] {
+	const addresses = []
+	const web3 = new Web3()
+	for (let i = 0; i < 10; i++) {
+		const account = web3.eth.accounts.create()
+		addresses.push(account.address)
+	}
+
+	return addresses
+}
+
+export class EventDataGenerator {
+	static readonly TEMPLATE: EventData = {
+		returnValues: {},
+		raw: {
+			data: '',
+			topics: [''],
+		},
+		event: '',
+		signature: '',
+		logIndex: 0,
+		transactionIndex: 0,
+		transactionHash: '',
+		blockHash: '',
+		blockNumber: 0,
+		address: '',
+	}
+
+	private readonly testData: EventData[] = []
+	public addMintTransfer(to: string, value: number, blockNumber: number) {
+		this.addTransfer(ZERO_ADDRESS, to, value, blockNumber)
+	}
+
+	public addTransfer(
+		from: string,
+		to: string,
+		value: number,
+		blockNumber: number
+	) {
+		const data = lodashfrom.cloneDeep(EventDataGenerator.TEMPLATE) as EventData
+		data.returnValues = {
+			from: from,
+			to: to,
+			value: value,
+		}
+		data.blockNumber = blockNumber
+		this.testData.push(data)
+	}
+
+	get data(): EventData[] {
+		return this.testData
+	}
 }
