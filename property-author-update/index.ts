@@ -19,7 +19,7 @@ import { PropertyFactoryChangeAuthor } from '../entities/property-factory-change
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
 
-class PropertyAuthenticationDeleter extends TimerBatchBase {
+class PropertyAuthorUpdate extends TimerBatchBase {
 	getBatchName(): string {
 		return 'property-author-update'
 	}
@@ -92,30 +92,6 @@ class PropertyAuthenticationDeleter extends TimerBatchBase {
 		await transaction.save(record)
 	}
 
-	private async getPropertyMetaHogehoge(
-		con: Connection,
-		destroyRecords: MetricsFactoryDestroy[]
-	): Promise<any[]> {
-		const relationData = []
-		const web3 = new Web3(
-			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
-		)
-		for (const record of destroyRecords) {
-			// eslint-disable-next-line no-await-in-loop
-			const propertyAddress = await getPropertyByMetrics(
-				con,
-				web3,
-				record.metrics
-			)
-			relationData.push({
-				property: propertyAddress,
-				metrics: record.metrics,
-			})
-		}
-
-		return relationData
-	}
-
 	private async getEvents(
 		con: Connection
 	): Promise<PropertyFactoryChangeAuthor[]> {
@@ -134,7 +110,7 @@ const timerTrigger: AzureFunction = async function (
 	context: Context,
 	myTimer: any
 ): Promise<void> {
-	const dataCreator = new PropertyAuthenticationDeleter(context, myTimer)
+	const dataCreator = new PropertyAuthorUpdate(context, myTimer)
 	await dataCreator.execute()
 }
 
