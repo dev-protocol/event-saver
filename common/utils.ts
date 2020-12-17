@@ -16,3 +16,11 @@ export function getTargetRecordsSeparatedByBlockNumber<
 
 	return targetRecords
 }
+
+export function getMaxBlockNumber(records: any[]): number {
+	const tmp = records.map((record) => {
+		return record.block_number
+	})
+	const maxBlockNumber = Math.max(...tmp)
+	return maxBlockNumber
+}
