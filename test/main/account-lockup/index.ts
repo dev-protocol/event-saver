@@ -13,7 +13,7 @@ import { AccountLockup } from '../../../entities/account-lockup'
 import { DevPropertyTransfer } from '../../../entities/dev-property-transfer'
 import { LockupLockedup } from '../../../entities/lockup-lockedup'
 import { ProcessedBlockNumber } from '../../../entities/processed-block-number'
-import { getProcessedBlockNumber } from '../../../common/db/event'
+import { getProcessedBlockNumber } from '../../../common/db/dao'
 
 const context = getContextMock()
 

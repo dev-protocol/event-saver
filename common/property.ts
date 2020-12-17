@@ -1,7 +1,9 @@
+import { Connection } from 'typeorm'
+import { EventData } from 'web3-eth-contract/types'
 import { DbConnection } from './db/common'
 import { getContractInfo } from './db/contract-info'
 import { PropertyMeta } from '../entities/property-meta'
-import { Connection } from 'typeorm'
+import { getPropertyInstance } from '../common/block-chain/utils'
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
@@ -54,49 +56,52 @@ export class PropertyAddress {
 	}
 }
 
-// Export class PropertyData {
-// 	private readonly web3: any
-// 	private readonly con: Connection
-// 	private readonly propertyAddress: string
-// 	private propertyInstance: any
-// 	private record: PropertyMeta
+export class PropertyData {
+	private readonly web3: any
+	private readonly con: Connection
+	private readonly propertyAddress: string
+	private propertyInstance: any
+	private record: PropertyMeta
 
-// 	constructor(_web3: any, _con: Connection, _propertyAddress: string) {
-// 		this.web3 = _web3
-// 		this.con = _con
-// 		this.propertyAddress = _propertyAddress
-// 	}
+	constructor(_web3: any, _con: Connection, _propertyAddress: string) {
+		this.web3 = _web3
+		this.con = _con
+		this.propertyAddress = _propertyAddress
+	}
 
-// 	get author(): string {
-// 		return this.record.author
-// 	}
+	public async load(): Promise<void> {
+		this.propertyInstance = await getPropertyInstance(
+			this.con,
+			this.web3,
+			this.propertyAddress
+		)
+		const repository = this.con.getRepository(PropertyMeta)
+		this.record = await repository.findOneOrFail({
+			property: this.propertyAddress,
+		})
+	}
 
-// 	public async load(): Promise<void> {
-// 		this.propertyInstance = await getPropertyInstance(
-// 			this.con,
-// 			this.web3,
-// 			this.propertyAddress
-// 		)
-// 		const repository = this.con.getRepository(PropertyMeta)
-// 		this.record = await repository.findOneOrFail({
-// 			property: this.propertyAddress,
-// 		})
-// 	}
+	public async getAuthor(): Promise<string> {
+		const author = await this.propertyInstance.methods.author().call()
 
-// 	public async hasAllTokenByAuthor(): Promise<boolean> {
-// 		const authorBalance = await this.propertyInstance.methods
-// 			.balanceOf(this.record.author)
-// 			.call()
-// 		const totalSupply = this.record.total_supply
-// 		return Number(totalSupply) === Number(authorBalance)
-// 	}
+		return author
+	}
 
-// 	public async getTransferEvent(endBlock: number): Promise<EventData[]> {
-// 		const startBlock = this.record.block_number
-// 		const events = await this.propertyInstance.getPastEvents('Transfer', {
-// 			fromBlock: startBlock - 1,
-// 			toBlock: endBlock,
-// 		})
-// 		return events
-// 	}
-// }
+	public async hasAllTokenByAuthor(): Promise<boolean> {
+		const author = await this.getAuthor()
+		const authorBalance = await this.propertyInstance.methods
+			.balanceOf(author)
+			.call()
+		const totalSupply = this.record.total_supply
+		return Number(totalSupply) === Number(authorBalance)
+	}
+
+	public async getTransferEvent(endBlock: number): Promise<EventData[]> {
+		const startBlock = this.record.block_number
+		const events = await this.propertyInstance.getPastEvents('Transfer', {
+			fromBlock: startBlock - 1,
+			toBlock: endBlock,
+		})
+		return events
+	}
+}
