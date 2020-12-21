@@ -6,8 +6,8 @@ CREATE TABLE property_factory_change_author(
     log_index INT NOT NULL,
     transaction_index INT NOT NULL,
     property TEXT NOT NULL,
-    beforeAuthor TEXT NOT NULL,
-	afterAuthor TEXT NOT NULL,
+    before_author TEXT NOT NULL,
+    after_author TEXT NOT NULL,
     raw_data TEXT NOT NULL,
     PRIMARY KEY(event_id)
 );
@@ -22,6 +22,6 @@ COMMENT ON COLUMN property_factory_change_author.block_number IS 'event block nu
 COMMENT ON COLUMN property_factory_change_author.log_index IS 'event log index';
 COMMENT ON COLUMN property_factory_change_author.transaction_index IS 'event transaction index';
 COMMENT ON COLUMN property_factory_change_author.property IS 'address of the property whose author has been changed';
-COMMENT ON COLUMN property_factory_change_author.beforeAuthor IS 'author address before the change';
-COMMENT ON COLUMN property_factory_change_author.afterAuthor IS 'author address after the change';
+COMMENT ON COLUMN property_factory_change_author.before_author IS 'author address before the change';
+COMMENT ON COLUMN property_factory_change_author.after_author IS 'author address after the change';
 COMMENT ON COLUMN property_factory_change_author.raw_data IS 'event raw data';

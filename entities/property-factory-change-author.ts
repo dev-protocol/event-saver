@@ -19,10 +19,10 @@ export class PropertyFactoryChangeAuthor extends BaseEntity {
 	public property!: string
 
 	@Column()
-	public beforeAuthor!: string
+	public before_author!: string
 
 	@Column()
-	public afterAuthor!: string
+	public after_author!: string
 
 	@Column()
 	public raw_data!: string

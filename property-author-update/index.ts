@@ -52,7 +52,7 @@ class PropertyAuthorUpdate extends TimerBatchBase {
 			await transaction.start()
 			this.logging.infolog(`record count：${targetRecords.length}`)
 			for (const data of targetRecords) {
-				if (data.beforeAuthor === data.afterAuthor) {
+				if (data.before_author === data.after_author) {
 					continue
 				}
 
@@ -87,7 +87,7 @@ class PropertyAuthorUpdate extends TimerBatchBase {
 		data: PropertyFactoryChangeAuthor
 	) {
 		const record = await getPropertyMeta(con, data.property)
-		record.author = data.afterAuthor
+		record.author = data.after_author
 		await transaction.save(record)
 	}
 

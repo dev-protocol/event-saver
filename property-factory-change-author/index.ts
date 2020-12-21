@@ -12,8 +12,8 @@ class CreateEventSaver extends EventSaver {
 		const propertyFactoryChangeAuthor = new PropertyFactoryChangeAuthor()
 		const values = event.get('returnValues')
 		propertyFactoryChangeAuthor.property = values._property
-		propertyFactoryChangeAuthor.beforeAuthor = values._beforeAuthor
-		propertyFactoryChangeAuthor.afterAuthor = values._afterAuthor
+		propertyFactoryChangeAuthor.before_author = values._beforeAuthor
+		propertyFactoryChangeAuthor.after_author = values._afterAuthor
 		return propertyFactoryChangeAuthor
 	}
 
