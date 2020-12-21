@@ -1,4 +1,7 @@
-import { getTargetRecordsSeparatedByBlockNumber } from '../../../common/utils'
+import {
+	getTargetRecordsSeparatedByBlockNumber,
+	getMaxBlockNumber,
+} from '../../../common/utils'
 
 describe('getTargetRecordsSeparatedByBlockNumber', () => {
 	describe('the block numbers are different.', () => {
@@ -122,5 +125,30 @@ describe('getTargetRecordsSeparatedByBlockNumber', () => {
 			expect(results[5].block_number).toBe(4)
 			expect(results[5].value).toBe('test6')
 		})
+	})
+})
+
+describe('getMaxBlockNumber', () => {
+	const param = [
+		{ block_number: 1, value: 'test1' },
+		{ block_number: 2, value: 'test2' },
+		{ block_number: 3, value: 'test3' },
+		{ block_number: 4, value: 'test4' },
+		{ block_number: 5, value: 'test5' },
+	]
+	it('maximum value can be getted.', async () => {
+		const result = getMaxBlockNumber(param)
+
+		expect(result).toBe(5)
+	})
+	it('it works even if there is only one array.', async () => {
+		const result = getMaxBlockNumber([{ block_number: 1, value: 'test1' }])
+
+		expect(result).toBe(1)
+	})
+	it('if the array is empty, an error will occur.', async () => {
+		expect(getMaxBlockNumber([])).toThrowError(
+			new Error('input data length is 0')
+		)
 	})
 })
