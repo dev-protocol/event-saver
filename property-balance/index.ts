@@ -12,7 +12,7 @@ import {
 	setProcessedBlockNumber,
 	getEventRecordThenGreaterBlockNumber,
 } from '../common/db/dao'
-import { createPropertyBalance } from '../common/property'
+import { createPropertyBalance } from '../common/property-balance'
 import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
 import { PropertyMeta } from '../entities/property-meta'
 /* eslint-disable @typescript-eslint/no-var-requires */

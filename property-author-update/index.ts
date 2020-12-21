@@ -1,7 +1,6 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
-import { getPropertyByMetrics } from '../common/block-chain/utils'
 import {
 	setProcessedBlockNumber,
 	getProcessedBlockNumber,
@@ -12,8 +11,8 @@ import {
 	getMaxBlockNumber,
 } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
-import { getPropertyMeta, createPropertyBalance } from '../common/property'
-import { MetricsFactoryDestroy } from '../entities/metrics-factory-destroy'
+import { getPropertyMeta } from '../common/property'
+import { createPropertyBalance } from '../common/property-balance'
 import { PropertyFactoryChangeAuthor } from '../entities/property-factory-change-author'
 
 /* eslint-disable @typescript-eslint/no-var-requires */
