@@ -129,24 +129,3 @@ async function savePropertyBalanceTestData(con: Connection) {
 	await transaction.commit()
 	await transaction.finish()
 }
-
-async function saveManyMetricsFactoryCreateTestData(con: Connection) {
-	const transaction = new Transaction(con)
-	await transaction.start()
-	const record = new MetricsFactoryCreate()
-	for (let i = 0; i < 120; i++) {
-		record.event_id = `dummy-event-id${i}`
-		record.block_number = 30000 + i
-		record.log_index = 2
-		record.transaction_index = 3
-		record.from_address = 'dummy-market-address1'
-		record.metrics = `dummy-metrics-address${i}`
-		record.raw_data = '{}'
-
-		// eslint-disable-next-line no-await-in-loop
-		await transaction.save(record)
-	}
-
-	await transaction.commit()
-	await transaction.finish()
-}
