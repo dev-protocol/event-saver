@@ -147,7 +147,10 @@ describe('getMaxBlockNumber', () => {
 		expect(result).toBe(1)
 	})
 	it('if the array is empty, an error will occur.', async () => {
-		expect(getMaxBlockNumber([])).toThrowError(
+		function testCall() {
+			getMaxBlockNumber([])
+		}
+		expect(testCall).toThrowError(
 			new Error('input data length is 0')
 		)
 	})
