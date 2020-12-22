@@ -44,6 +44,7 @@ class PropertyAuthorUpdate extends TimerBatchBase {
 			this.logging.infolog('no target record')
 			return
 		}
+
 		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
 		const transaction = new Transaction(con)
 		try {
