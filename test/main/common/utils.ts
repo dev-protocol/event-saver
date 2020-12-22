@@ -150,8 +150,7 @@ describe('getMaxBlockNumber', () => {
 		function testCall() {
 			getMaxBlockNumber([])
 		}
-		expect(testCall).toThrowError(
-			new Error('input data length is 0')
-		)
+
+		expect(testCall).toThrowError(new Error('input data length is 0'))
 	})
 })
