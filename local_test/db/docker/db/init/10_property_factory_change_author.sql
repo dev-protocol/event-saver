@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS property_factory_create;
+DROP TABLE IF EXISTS property_factory_change_author;
 
 CREATE TABLE property_factory_change_author(
     event_id TEXT NOT NULL,
@@ -16,7 +16,7 @@ CREATE INDEX ON property_factory_change_author(
 	block_number
 );
 
-COMMENT ON TABLE property_factory_change_author IS "a table to which data is added when the property's author changes.";
+COMMENT ON TABLE property_factory_change_author IS 'a table to which data is added when the property author changes.';
 COMMENT ON COLUMN property_factory_change_author.event_id IS 'event id';
 COMMENT ON COLUMN property_factory_change_author.block_number IS 'event block number';
 COMMENT ON COLUMN property_factory_change_author.log_index IS 'event log index';

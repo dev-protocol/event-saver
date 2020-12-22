@@ -11,9 +11,9 @@ import {
 	getMaxBlockNumber,
 } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
-import { getPropertyMeta } from '../common/property'
 import { createPropertyBalance } from '../common/property-balance'
 import { PropertyFactoryChangeAuthor } from '../entities/property-factory-change-author'
+import { PropertyMeta } from '../entities/property-meta'
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
@@ -44,9 +44,7 @@ class PropertyAuthorUpdate extends TimerBatchBase {
 			this.logging.infolog('no target record')
 			return
 		}
-
 		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
-
 		const transaction = new Transaction(con)
 		try {
 			await transaction.start()
@@ -57,7 +55,11 @@ class PropertyAuthorUpdate extends TimerBatchBase {
 				}
 
 				// eslint-disable-next-line no-await-in-loop
-				await this.updatePropertyMeta(con, transaction, data)
+				await transaction.manager.update(
+					PropertyMeta,
+					{ property: data.property },
+					{ author: data.after_author }
+				)
 				// eslint-disable-next-line no-await-in-loop
 				await createPropertyBalance(
 					con,
@@ -79,16 +81,6 @@ class PropertyAuthorUpdate extends TimerBatchBase {
 		} finally {
 			await transaction.finish()
 		}
-	}
-
-	private async updatePropertyMeta(
-		con: Connection,
-		transaction: Transaction,
-		data: PropertyFactoryChangeAuthor
-	) {
-		const record = await getPropertyMeta(con, data.property)
-		record.author = data.after_author
-		await transaction.save(record)
 	}
 
 	private async getEvents(
