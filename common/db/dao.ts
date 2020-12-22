@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 import { ObjectType, Connection, EntityManager } from 'typeorm'
 import { ProcessedBlockNumber } from '../../entities/processed-block-number'
 import { Transaction } from './common'
