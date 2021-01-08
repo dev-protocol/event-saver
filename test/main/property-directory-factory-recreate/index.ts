@@ -8,11 +8,11 @@ import {
 } from '../../lib/test-data'
 import { getDbConnection } from '../../lib/db'
 
-import timerTrigger from '../../../withdraw-property-transfer/index'
+import timerTrigger from '../../../property-directory-factory-recreate'
 import { DbConnection } from '../../../common/db/common'
 import { getApprovalBlockNumber } from '../../../common/block-chain/utils'
 import { Event } from '../../../common/block-chain/event'
-import { WithdrawPropertyTransfer } from '../../../entities/withdraw-property-transfer'
+import { PropertyDirectoryFactoryRecreate } from '../../../entities/property-directory-factory-recreate'
 
 const context = getContextMock()
 const undefindMock = jest.fn().mockResolvedValue(undefined)
@@ -33,7 +33,7 @@ describe('timerTrigger', () => {
 		await saveContractInfoTestdata(con.connection)
 	})
 	beforeEach(async () => {
-		await clearData(con.connection, WithdrawPropertyTransfer)
+		await clearData(con.connection, PropertyDirectoryFactoryRecreate)
 	})
 	it('Register data as many events as there are.', async () => {
 		mocked(Event).mockImplementation((): any => {
@@ -46,9 +46,8 @@ describe('timerTrigger', () => {
 						logIndex: 15,
 						transactionIndex: 26,
 						returnValues: {
-							_property: 'dummy-property-address1',
-							_from: 'dummy-from-address1',
-							_to: 'dummy-to-address1',
+							_old: 'dummy-old-address1',
+							_new: 'dummy-new-address1',
 						},
 					},
 					{
@@ -57,9 +56,8 @@ describe('timerTrigger', () => {
 						logIndex: 14,
 						transactionIndex: 23,
 						returnValues: {
-							_property: 'dummy-property-address2',
-							_from: 'dummy-from-address2',
-							_to: 'dummy-to-address2',
+							_old: 'dummy-old-address2',
+							_new: 'dummy-new-address2',
 						},
 					},
 					{
@@ -68,9 +66,8 @@ describe('timerTrigger', () => {
 						logIndex: 12,
 						transactionIndex: 21,
 						returnValues: {
-							_property: 'dummy-property-address3',
-							_from: 'dummy-from-address3',
-							_to: 'dummy-to-address3',
+							_old: 'dummy-old-address3',
+							_new: 'dummy-new-address3',
 						},
 					},
 				]),
@@ -78,54 +75,50 @@ describe('timerTrigger', () => {
 		})
 		await timerTrigger(context, timer)
 
-		const count = await getCount(con.connection, WithdrawPropertyTransfer)
+		const count = await getCount(
+			con.connection,
+			PropertyDirectoryFactoryRecreate
+		)
 		expect(count).toBe(3)
 
 		const manager = new EntityManager(con.connection)
 		let record = await manager.findOneOrFail(
-			WithdrawPropertyTransfer,
+			PropertyDirectoryFactoryRecreate,
 			'dummy-event-id1'
 		)
 
 		expect(record.event_id).toBe('dummy-event-id1')
-		expect(record.property_address).toBe('dummy-property-address1')
-		expect(record.from_address).toBe('dummy-from-address1')
-		expect(record.to_address).toBe('dummy-to-address1')
+		expect(record.old).toBe('dummy-old-address1')
+		expect(record.new).toBe('dummy-new-address1')
 		let rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id1')
-		expect(rawData.returnValues._property).toBe('dummy-property-address1')
-		expect(rawData.returnValues._from).toBe('dummy-from-address1')
-		expect(rawData.returnValues._to).toBe('dummy-to-address1')
+		expect(rawData.returnValues._old).toBe('dummy-old-address1')
+		expect(rawData.returnValues._new).toBe('dummy-new-address1')
 
 		record = await manager.findOneOrFail(
-			WithdrawPropertyTransfer,
+			PropertyDirectoryFactoryRecreate,
 			'dummy-event-id2'
 		)
 
 		expect(record.event_id).toBe('dummy-event-id2')
-		expect(record.property_address).toBe('dummy-property-address2')
-		expect(record.from_address).toBe('dummy-from-address2')
-		expect(record.to_address).toBe('dummy-to-address2')
+		expect(record.old).toBe('dummy-old-address2')
+		expect(record.new).toBe('dummy-new-address2')
 		rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id2')
-		expect(rawData.returnValues._property).toBe('dummy-property-address2')
-		expect(rawData.returnValues._from).toBe('dummy-from-address2')
-		expect(rawData.returnValues._to).toBe('dummy-to-address2')
+		expect(rawData.returnValues._old).toBe('dummy-old-address2')
+		expect(rawData.returnValues._new).toBe('dummy-new-address2')
 
 		record = await manager.findOneOrFail(
-			WithdrawPropertyTransfer,
+			PropertyDirectoryFactoryRecreate,
 			'dummy-event-id3'
 		)
 
-		expect(record.event_id).toBe('dummy-event-id3')
-		expect(record.property_address).toBe('dummy-property-address3')
-		expect(record.from_address).toBe('dummy-from-address3')
-		expect(record.to_address).toBe('dummy-to-address3')
+		expect(record.old).toBe('dummy-old-address3')
+		expect(record.new).toBe('dummy-new-address3')
 		rawData = JSON.parse(record.raw_data)
 		expect(rawData.id).toBe('dummy-event-id3')
-		expect(rawData.returnValues._property).toBe('dummy-property-address3')
-		expect(rawData.returnValues._from).toBe('dummy-from-address3')
-		expect(rawData.returnValues._to).toBe('dummy-to-address3')
+		expect(rawData.returnValues._old).toBe('dummy-old-address3')
+		expect(rawData.returnValues._new).toBe('dummy-new-address3')
 	})
 	afterAll(async () => {
 		await con.quit()

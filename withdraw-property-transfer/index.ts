@@ -1,7 +1,7 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { ObjectType } from 'typeorm'
 import { EventSaver } from '../common/event-save'
-import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
+import { WithdrawPropertyTransfer } from '../entities/withdraw-property-transfer'
 
 class PropertyTransferEventSaver extends EventSaver {
 	getModelObject<Entity>(): ObjectType<Entity> {

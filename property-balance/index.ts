@@ -11,7 +11,7 @@ import {
 	PropertyBalanceAccessor,
 } from '../common/db/dao'
 import { PropertyData } from '../common/property'
-import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
+import { WithdrawPropertyTransfer } from '../entities/withdraw-property-transfer'
 import { PropertyMeta } from '../entities/property-meta'
 /* eslint-disable @typescript-eslint/no-var-requires */
 const Web3 = require('web3')
