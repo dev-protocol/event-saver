@@ -11,7 +11,8 @@ class PropertyDirectoryFactoryCreateEventSaver extends EventSaver {
 	getSaveData(event: Map<string, any>): any {
 		const propertyDirectoryFactoryCreate = new PropertyDirectoryFactoryCreate()
 		const values = event.get('returnValues')
-		propertyDirectoryFactoryCreate.property_directory = values._propertyDirectory
+		propertyDirectoryFactoryCreate.property_directory =
+			values._propertyDirectory
 		propertyDirectoryFactoryCreate.author = values._author
 		propertyDirectoryFactoryCreate.name = values._name
 		propertyDirectoryFactoryCreate.symbol = values._symbol
