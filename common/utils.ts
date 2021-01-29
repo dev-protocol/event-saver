@@ -16,15 +16,3 @@ export function getTargetRecordsSeparatedByBlockNumber<
 
 	return targetRecords
 }
-
-export function getMaxBlockNumber(records: any[]): number {
-	if (records.length === 0) {
-		throw new Error('input data length is 0')
-	}
-
-	const tmp = records.map((record) => {
-		return record.block_number
-	})
-	const maxBlockNumber = Math.max(...tmp)
-	return maxBlockNumber
-}

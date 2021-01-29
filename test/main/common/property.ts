@@ -1,11 +1,7 @@
 import { EventData } from 'web3-eth-contract/types'
 import { DbConnection, Transaction } from '../../../common/db/common'
 import { ZERO_ADDRESS } from '../../../common/block-chain/utils'
-import {
-	PropertyAddress,
-	PropertyData,
-	getPropertyMeta,
-} from '../../../common/property'
+import { PropertyAddress, PropertyData } from '../../../common/property'
 import { getDbConnection } from './../../lib/db'
 import {
 	saveContractInfoTestdata,
@@ -220,54 +216,5 @@ describe('PropertyData', () => {
 				}
 			})
 		})
-	})
-})
-
-describe('getPropertyMeta', () => {
-	let con: DbConnection
-	beforeAll(async (done) => {
-		con = await getDbConnection()
-		await clearData(con.connection, PropertyMeta)
-		const transaction = new Transaction(con.connection)
-		await transaction.start()
-		const record = new PropertyMeta()
-		record.author = 'author1'
-		record.property = 'property1'
-		record.sender = 'snder1'
-		record.name = 'name1'
-		record.symbol = 'symbol1'
-		record.total_supply = 100000000
-		record.block_number = 10000
-		await transaction.save(record)
-		record.author = 'author2'
-		record.property = 'property2'
-		record.sender = 'snder2'
-		record.name = 'name2'
-		record.symbol = 'symbol2'
-		record.total_supply = 1000000000
-		record.block_number = 100000
-		await transaction.save(record)
-		await transaction.commit()
-		await transaction.finish()
-		done()
-	})
-	afterAll(async (done) => {
-		await con.quit()
-		done()
-	})
-	it('data in the PropertyMeta table can be retrieved..', async () => {
-		const propertyMeta = await getPropertyMeta(con.connection, 'property1')
-		expect(propertyMeta.author).toBe('author1')
-		expect(propertyMeta.property).toBe('property1')
-		expect(propertyMeta.sender).toBe('snder1')
-		expect(propertyMeta.name).toBe('name1')
-		expect(propertyMeta.symbol).toBe('symbol1')
-		expect(propertyMeta.total_supply).toBe('100000000')
-		expect(propertyMeta.block_number).toBe(10000)
-	})
-	it('an error occurs when a non-existent property address is specified.', async () => {
-		await expect(getPropertyMeta(con.connection, 'hogehoge')).rejects.toThrow(
-			'Could not find any entity of type "PropertyMeta"'
-		)
 	})
 })
