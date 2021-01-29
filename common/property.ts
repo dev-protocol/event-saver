@@ -75,10 +75,7 @@ export class PropertyData {
 			this.web3,
 			this.propertyAddress
 		)
-		const repository = this.con.getRepository(PropertyMeta)
-		this.record = await repository.findOneOrFail({
-			property: this.propertyAddress,
-		})
+		this.record = await getPropertyMeta(this.con, this.propertyAddress)
 	}
 
 	public async getAuthor(): Promise<string> {
@@ -104,4 +101,15 @@ export class PropertyData {
 		})
 		return events
 	}
+}
+
+export async function getPropertyMeta(
+	con: Connection,
+	address: string
+): Promise<PropertyMeta> {
+	const repository = con.getRepository(PropertyMeta)
+	const record = await repository.findOneOrFail({
+		property: address,
+	})
+	return record
 }
