@@ -1,6 +1,10 @@
+/* eslint-disable no-await-in-loop */
 import { ObjectType, Connection, EntityManager } from 'typeorm'
+import { EventData } from 'web3-eth-contract/types'
 import { ProcessedBlockNumber } from '../../entities/processed-block-number'
+import { PropertyBalance } from '../../entities/property-balance'
 import { Transaction } from './common'
+import { formatTransferEventToPropertyBalance } from './format'
 
 export class EventTableAccessor<Entity> {
 	private readonly _connection: Connection
@@ -95,4 +99,41 @@ export async function getEventRecordThenGreaterBlockNumber<Entity>(
 		.getMany()
 
 	return records
+}
+
+export class PropertyBalanceAccessor {
+	private readonly transaction: Transaction
+	constructor(_transaction: Transaction) {
+		this.transaction = _transaction
+	}
+
+	public async deleteRecord(propertyAddress: string) {
+		const records = await this.transaction.manager.find(PropertyBalance, {
+			property_address: propertyAddress,
+		})
+		for (let record of records) {
+			await this.transaction.remove(record)
+		}
+	}
+
+	public async insertRecord(
+		propertyTransferEventData: EventData[],
+		propertyAddress: string,
+		author: string
+	): Promise<void> {
+		if (propertyTransferEventData.length === 0) {
+			throw new Error(`property balance record is 0: ${propertyAddress}`)
+		}
+
+		await this.deleteRecord(propertyAddress)
+		const propertyBalanceRecords = formatTransferEventToPropertyBalance(
+			propertyTransferEventData,
+			author,
+			propertyAddress
+		)
+
+		for (let record of propertyBalanceRecords) {
+			await this.transaction.save(record)
+		}
+	}
 }

@@ -2,17 +2,15 @@
 import { AzureFunction, Context } from '@azure/functions'
 import { Connection } from 'typeorm'
 import { TimerBatchBase } from '../common/base'
-import {
-	getTargetRecordsSeparatedByBlockNumber,
-	getMaxBlockNumber,
-} from '../common/utils'
+import { getTargetRecordsSeparatedByBlockNumber } from '../common/utils'
 import { DbConnection, Transaction } from '../common/db/common'
 import {
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
 	getEventRecordThenGreaterBlockNumber,
+	PropertyBalanceAccessor,
 } from '../common/db/dao'
-import { createPropertyBalance } from '../common/property-balance'
+import { PropertyData } from '../common/property'
 import { WithdrawPropertyTransfer } from '../entities/withdraw-property_transfer'
 import { PropertyMeta } from '../entities/property-meta'
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -68,7 +66,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
 		this.logging.infolog(`record count：${targetRecords.length}`)
 		for (let record of targetRecords) {
-			await createPropertyBalance(
+			await this.createPropertyBalance(
 				con,
 				record.property,
 				record.block_number,
@@ -79,9 +77,41 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		await setProcessedBlockNumber(
 			transaction,
 			key,
-			getMaxBlockNumber(targetRecords)
+			this.getMaxBlockNumber(targetRecords)
 		)
 		this.logging.infolog(`all records were inserted：${targetRecords.length}`)
+	}
+
+	private getMaxBlockNumber(records: any[]): number {
+		const tmp = records.map((record) => {
+			return record.block_number
+		})
+		const maxBlockNumber = Math.max(...tmp)
+		return maxBlockNumber
+	}
+
+	private async createPropertyBalance(
+		con: Connection,
+		propertyAddress: string,
+		endBlockNumber: number,
+		transaction: Transaction
+	): Promise<void> {
+		const propertyBalanceAccessor = new PropertyBalanceAccessor(transaction)
+		const web3 = new Web3(
+			new Web3.providers.HttpProvider(process.env.WEB3_URL!)
+		)
+		const property = new PropertyData(web3, con, propertyAddress)
+		await property.load()
+
+		const hasAllToken = await property.hasAllTokenByAuthor()
+		if (hasAllToken) {
+			await propertyBalanceAccessor.deleteRecord(propertyAddress)
+			return
+		}
+
+		const events = await property.getTransferEvent(endBlockNumber + 1)
+		const author = await property.getAuthor()
+		await propertyBalanceAccessor.insertRecord(events, propertyAddress, author)
 	}
 
 	private async createByWithdrawPropertyTransfer(
@@ -103,7 +133,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		const targetRecords = getTargetRecordsSeparatedByBlockNumber(records, 100)
 		this.logging.infolog(`record count：${targetRecords.length}`)
 		for (let record of targetRecords) {
-			await createPropertyBalance(
+			await this.createPropertyBalance(
 				con,
 				record.property_address,
 				record.block_number,
@@ -114,7 +144,7 @@ class PropertyBalanceCreator extends TimerBatchBase {
 		await setProcessedBlockNumber(
 			transaction,
 			this.getBatchName(),
-			getMaxBlockNumber(targetRecords)
+			this.getMaxBlockNumber(targetRecords)
 		)
 		this.logging.infolog(`all records were inserted：${targetRecords.length}`)
 	}
