@@ -1,5 +1,5 @@
 {
-	"scriptFile": "../dist/property-ahtuor-update/index.js",
+	"scriptFile": "../dist/property-author-update/index.js",
 	"bindings": [
 		{
 			"name": "myTimer",
