@@ -8,13 +8,13 @@ import {
 	getEventRecordThenGreaterBlockNumber,
 	getProcessedBlockNumber,
 	setProcessedBlockNumber,
-	getMinBlockNumber,
+	insertIgnoreDevPropertyTransfer,
+	LockedupEventId,
 } from './db/dao'
-import { LockupLockedup } from '../entities/lockup-lockedup'
 import { DevPropertyTransfer } from '../entities/dev-property-transfer'
 import { AccountLockup } from '../entities/account-lockup'
 import { PropertyLockup } from '../entities/property-lockup'
-import { EventSaverWarning } from './error'
+import { getWalletAddressAndPropertyAddress } from './utils'
 
 export abstract class LockupInfoCreator extends TimerBatchBase {
 	async innerExecute(): Promise<void> {
@@ -30,46 +30,9 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 		}
 	}
 
-	private async getLockupId(
-		con: Connection,
-		record: DevPropertyTransfer
-	): Promise<string> {
-		const repository = con.getRepository(LockupLockedup)
-		const [
-			walletAddress,
-			propertyAddress,
-		] = await this.getAddressFromDevPropertyTransfer(record)
-
-		const findRecords = await repository.find({
-			block_number: record.block_number,
-			transaction_index: record.transaction_index,
-			from_address: walletAddress,
-			property: propertyAddress,
-			token_value: record.value,
-		})
-		if (findRecords.length === 1) {
-			return findRecords[0].event_id
-		}
-
-		if (findRecords.length === 0) {
-			throw new EventSaverWarning('not found lockup_lockuped record.')
-		}
-
-		throw new Error('get many lockup_lockuped record.')
-	}
-
-	private async getAddressFromDevPropertyTransfer(
-		record: DevPropertyTransfer
-	): Promise<string[]> {
-		if (record.is_lockup) {
-			return [record.from_address, record.to_address]
-		}
-
-		return [record.to_address, record.from_address]
-	}
-
 	private async createCurrentLockupRecord(con: Connection): Promise<void> {
-		const lockupMinBlockNumber = await getMinBlockNumber(con, LockupLockedup)
+		const eventId = new LockedupEventId(con)
+		await eventId.prepare()
 		const blockNumber = await getProcessedBlockNumber(con, this.getBatchName())
 		this.logging.infolog(`start block number：${blockNumber + 1}`)
 		const records = await getEventRecordThenGreaterBlockNumber(
@@ -94,7 +57,7 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 				const [
 					accountAddress,
 					propertyAddress,
-				] = await this.getAddressFromDevPropertyTransfer(record)
+				] = getWalletAddressAndPropertyAddress(record)
 				const oldCurrentLockup = await this.getOldRecord(
 					transaction.manager,
 					accountAddress,
@@ -102,10 +65,15 @@ export abstract class LockupInfoCreator extends TimerBatchBase {
 				)
 				maxBlockNumber = Math.max(maxBlockNumber, record.block_number)
 				if (record.is_lockup) {
-					const lockedupEventId =
-						record.block_number < lockupMinBlockNumber
-							? 'dummy-lockup-id'
-							: await this.getLockupId(con, record)
+					const [
+						isContinue,
+						lockedupEventId,
+					] = await eventId.getLockedupEventId(record)
+					if (isContinue) {
+						await insertIgnoreDevPropertyTransfer(transaction, record)
+						continue
+					}
+
 					const oldValue =
 						typeof oldCurrentLockup === 'undefined'
 							? 0
