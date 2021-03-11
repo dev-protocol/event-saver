@@ -1,10 +1,6 @@
 import { ObjectType, Connection, EntityManager } from 'typeorm'
 import { ProcessedBlockNumber } from '../../entities/processed-block-number'
-import { DevPropertyTransfer } from '../../entities/dev-property-transfer'
-import { IgnoreDevPropertyTransfer } from '../../entities/ignore-dev-property-transfer'
-import { LockupLockedup } from '../../entities/lockup-lockedup'
 import { Transaction } from './common'
-import { getWalletAddressAndPropertyAddress } from './../utils'
 
 export class EventTableAccessor<Entity> {
 	private readonly _connection: Connection
@@ -99,67 +95,4 @@ export async function getEventRecordThenGreaterBlockNumber<Entity>(
 		.getMany()
 
 	return records
-}
-
-export async function insertIgnoreDevPropertyTransfer(
-	transaction: Transaction,
-	targetRecord: DevPropertyTransfer
-): Promise<void> {
-	const ignore = new IgnoreDevPropertyTransfer()
-	ignore.event_id = targetRecord.event_id
-	ignore.block_number = targetRecord.block_number
-	ignore.log_index = targetRecord.log_index
-	ignore.transaction_index = targetRecord.transaction_index
-	ignore.from_address = targetRecord.from_address
-	ignore.to_address = targetRecord.to_address
-	ignore.value = targetRecord.value
-	ignore.is_lockup = targetRecord.is_lockup
-	ignore.raw_data = targetRecord.raw_data
-	await transaction.save(ignore)
-}
-
-export class LockedupEventId {
-	private readonly _con: Connection
-	private _lockupMinBlockNumber: number
-
-	constructor(con: Connection) {
-		this._con = con
-	}
-
-	public async prepare(): Promise<void> {
-		this._lockupMinBlockNumber = await getMinBlockNumber(
-			this._con,
-			LockupLockedup
-		)
-	}
-
-	public async getLockedupEventId(
-		record: DevPropertyTransfer
-	): Promise<[boolean, string]> {
-		if (record.block_number < this._lockupMinBlockNumber) {
-			return [false, 'dummy-lockup-id']
-		}
-
-		const repository = this._con.getRepository(LockupLockedup)
-		const [walletAddress, propertyAddress] = getWalletAddressAndPropertyAddress(
-			record
-		)
-
-		const findRecords = await repository.find({
-			block_number: record.block_number,
-			transaction_index: record.transaction_index,
-			from_address: walletAddress,
-			property: propertyAddress,
-			token_value: record.value,
-		})
-		if (findRecords.length === 1) {
-			return [false, findRecords[0].event_id]
-		}
-
-		if (findRecords.length === 0) {
-			return [true, '']
-		}
-
-		throw new Error('lockuped_lock has many record.')
-	}
 }
