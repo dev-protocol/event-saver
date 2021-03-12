@@ -1,3 +1,5 @@
+import { DevPropertyTransfer } from '../entities/dev-property-transfer'
+
 export function getTargetRecordsSeparatedByBlockNumber<
 	T extends { block_number: number }
 >(records: T[], maxCount: number): T[] {
@@ -27,4 +29,14 @@ export function getMaxBlockNumber(records: any[]): number {
 	})
 	const maxBlockNumber = Math.max(...tmp)
 	return maxBlockNumber
+}
+
+export function getWalletAddressAndPropertyAddress(
+	record: DevPropertyTransfer
+): [string, string] {
+	if (record.is_lockup) {
+		return [record.from_address, record.to_address]
+	}
+
+	return [record.to_address, record.from_address]
 }
