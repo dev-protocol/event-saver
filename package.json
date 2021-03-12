@@ -14,7 +14,8 @@
 		"test": "npm run build && jest --runInBand --testTimeout=50000",
 		"lint": "npm run lint:eslint && npm run lint:format",
 		"lint:eslint": "eslint . --ext .ts --fix",
-		"lint:format": "prettier --write '**/*.{json,md,yml}'"
+		"lint:format": "prettier --write '**/*.{json,md,yml}'",
+		"prepare": "husky install"
 	},
 	"jest": {
 		"moduleFileExtensions": [
@@ -36,11 +37,6 @@
 		"testMatch": [
 			"**/test/main/**/*.ts"
 		]
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "npm run lint"
-		}
 	},
 	"dependencies": {
 		"@types/pg": "7.14.11",
